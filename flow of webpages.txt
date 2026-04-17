@@ -1,0 +1,5 @@
+index.html → Login/Signup → saves userUsername to localStorage → redirects to arena.html
+arena.html → Pick teams → saves teams to localStorage → redirects to backup.html
+backup.html → Game play → on END GAME saves finalTeams + posts to /save-result → redirects to results.html
+results.html → Shows scores → "Back to Home" clears storage → back to arena.html
+admin.html → Now uses /login API → shows all users + game results from DB

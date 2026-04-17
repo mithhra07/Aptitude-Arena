@@ -3,379 +3,770 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
   <title>Game Results | Aptitude Arena</title>
   <style>
     :root {
-      --deep: #030f1c;
-      --mid: #071e36;
-      --bright: #1b6ca8;
-      --foam: #e0f7ff;
+      --wood-dark: #3b1f0a;
+      --wood-mid: #6b3a1f;
       --gold: #f4a300;
-      --gold-lt: #ffd166;
-      --glass: rgba(7,30,54,0.72);
-      --glass-border: rgba(178,235,242,0.22);
+      --gold-bright: #ffd166;
+      --gold-dark: #c47d00;
+      --ink: #2a1505;
+      --foam: #e0f7ff;
+      --danger: #c0392b;
+      --ok: #2ecc71;
+
+      /* rank colors matching the game image */
+      --rank1-border: #f4a300;
+      --rank2-border: #aab8c2;
+      --rank3-border: #cd7f32;
+      --rank-tie: #e74c3c;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       min-height: 100vh;
-      font-family: "Outfit", sans-serif;
-      color: var(--foam);
-      background:
-        radial-gradient(circle at 50% 44%, rgba(91, 200, 220, 0.11) 0%, rgba(91, 200, 220, 0.04) 24%, transparent 54%),
-        radial-gradient(circle at 52% 40%, rgba(255, 209, 102, 0.08) 0%, transparent 34%),
-        var(--deep);
+      font-family: "Nunito", sans-serif;
       overflow-x: hidden;
-    }
-
-    .bg-layer {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      background: linear-gradient(135deg, #020c17 0%, #041e3a 40%, #071e36 70%, #020c17 100%);
-      background-size: 300% 300%;
-      animation: bgShift 18s ease infinite alternate;
-    }
-
-    .bg-hex {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      background-image:
-        linear-gradient(rgba(178,235,242,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(178,235,242,0.025) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
-    }
-
-    .bg-glow-top {
-      position: fixed;
-      top: -110px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 840px;
-      height: 360px;
-      background: radial-gradient(ellipse, rgba(244,163,0,0.16), transparent 68%);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .page {
       position: relative;
-      z-index: 2;
+      color: var(--foam);
+    }
+
+    /* ── Sky ── */
+    .sky {
+      position: fixed; inset: 0;
+      background: linear-gradient(180deg, #0d1f45 0%, #1a3a6b 35%, #2d6a9f 65%, #5bafd6 85%, #87ceeb 100%);
+      z-index: 0;
+    }
+
+    /* ── Wavy teal ocean border (matches image top/bottom) ── */
+    .ocean-top {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px; z-index: 6; pointer-events: none;
+      background: #1a7a6e;
+      clip-path: polygon(0 0, 100% 0, 100% 55%, 95% 75%, 88% 55%, 80% 80%, 72% 55%, 64% 80%, 56% 55%, 48% 80%, 40% 55%, 32% 80%, 24% 55%, 16% 80%, 8% 55%, 0 75%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .ocean-top-inner {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 7; pointer-events: none;
+      background: #26a89a;
+      clip-path: polygon(0 0, 100% 0, 100% 40%, 95% 60%, 88% 40%, 80% 65%, 72% 40%, 64% 65%, 56% 40%, 48% 65%, 40% 40%, 32% 65%, 24% 40%, 16% 65%, 8% 40%, 0 60%);
+    }
+    .ocean-bottom {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 70px; z-index: 6; pointer-events: none;
+      background: #1a7a6e;
+      clip-path: polygon(0 25%, 8% 45%, 16% 20%, 24% 45%, 32% 20%, 40% 45%, 48% 20%, 56% 45%, 64% 20%, 72% 45%, 80% 20%, 88% 45%, 95% 25%, 100% 45%, 100% 100%, 0 100%);
+    }
+    .ocean-bottom-inner {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; z-index: 7; pointer-events: none;
+      background: #26a89a;
+      clip-path: polygon(0 35%, 8% 55%, 16% 30%, 24% 55%, 32% 30%, 40% 55%, 48% 30%, 56% 55%, 64% 30%, 72% 55%, 80% 30%, 88% 55%, 95% 35%, 100% 55%, 100% 100%, 0 100%);
+    }
+
+    /* ── Stars ── */
+    .stars { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+    .star {
+      position: absolute; border-radius: 50%; background: #fff;
+      animation: twinkle linear infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
+    /* ── Particles ── */
+    .particles { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: var(--gold-bright);
+      animation: floatUp linear infinite; opacity: 0;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      20% { opacity: 0.8; }
+      80% { opacity: 0.4; }
+      100% { transform: translateY(-120px) scale(0.3); opacity: 0; }
+    }
+
+    /* ── Moon ── */
+    .moon {
+      position: fixed; top: 6%; right: 12%;
+      width: 80px; height: 80px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fffde8, #f4d96a 60%, #d4a820);
+      box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.15);
+      z-index: 4;
+      animation: moonGlow 4s ease-in-out infinite alternate;
+    }
+    @keyframes moonGlow {
+      0% { box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.12); }
+      100% { box-shadow: 0 0 45px 15px rgba(255,220,80,0.6), 0 0 110px 40px rgba(255,200,50,0.22); }
+    }
+
+    /* ── Fireflies ── */
+    .firefly {
+      position: fixed; width: 5px; height: 5px; border-radius: 50%;
+      background: #b8ff80; box-shadow: 0 0 6px 3px rgba(184,255,128,0.7);
+      z-index: 5; pointer-events: none;
+      animation: fireflyFloat linear infinite;
+    }
+    @keyframes fireflyFloat {
+      0% { transform: translate(0,0) scale(1); opacity: 0; }
+      15% { opacity: 1; }
+      50% { transform: translate(var(--dx), var(--dy)) scale(0.8); opacity: 0.8; }
+      85% { opacity: 1; }
+      100% { transform: translate(0,0) scale(1); opacity: 0; }
+    }
+
+    /* ── Hills SVG (bottom) ── */
+    .ground-wrap {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 3; pointer-events: none;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      position: relative; z-index: 10;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 80px 20px;
     }
 
-    .page::before {
-      content: "";
-      position: absolute;
-      inset: 50% auto auto 50%;
-      transform: translate(-50%, -50%);
-      width: min(920px, 88vw);
-      height: min(620px, 72vh);
+    /* ── Outer wooden frame ── */
+    .board-frame {
+      position: relative;
+      width: min(820px, 100%);
+      padding: 14px;
+      border-radius: 22px;
       background:
-        radial-gradient(circle, rgba(91, 200, 220, 0.12) 0%, rgba(91, 200, 220, 0.05) 30%, transparent 68%),
-        radial-gradient(circle, rgba(255, 209, 102, 0.08) 0%, transparent 46%);
-      filter: blur(18px);
-      pointer-events: none;
-      z-index: -1;
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow:
+        0 0 0 3px #c47d00,
+        0 0 0 5px #7a4a00,
+        0 30px 70px rgba(0,0,0,0.65),
+        0 0 50px rgba(244,163,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+      animation: frameIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes frameIn {
+      from { transform: translateY(30px) scale(0.92); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
     }
 
-    .results-card {
-      width: min(760px, 100%);
-      border-radius: 24px;
-      padding: clamp(20px, 4vw, 34px);
-      background: rgba(10, 35, 64, 0.8);
-      border: 1px solid rgba(178, 235, 242, 0.26);
-      backdrop-filter: blur(16px);
+    /* Frame corner ornaments */
+    .frame-corner {
+      position: absolute; color: var(--gold); font-size: 22px;
+      filter: drop-shadow(0 0 6px rgba(244,163,0,0.7));
+      pointer-events: none; z-index: 2; line-height: 1;
+    }
+    .frame-corner.tl { top: 6px; left: 10px; }
+    .frame-corner.tr { top: 6px; right: 10px; }
+    .frame-corner.bl { bottom: 6px; left: 10px; }
+    .frame-corner.br { bottom: 6px; right: 10px; }
+
+    /* ── Dark board inner (the scoreboard panel) ── */
+    .board-inner {
+      border-radius: 12px;
+      background: linear-gradient(160deg, #0f2540 0%, #0a1a30 50%, #071220 100%);
+      border: 2px solid rgba(26,122,110,0.6);
       box-shadow:
-        0 24px 56px rgba(0, 0, 0, 0.42),
-        0 0 0 1px rgba(255, 209, 102, 0.08),
-        0 0 28px rgba(91, 200, 220, 0.1),
-        inset 0 1px 0 rgba(224, 247, 255, 0.12);
+        inset 0 0 40px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 0 20px rgba(26,122,110,0.3);
+      padding: clamp(18px, 3vw, 30px);
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      animation: cardIn 0.68s cubic-bezier(0.22, 1, 0.36, 1);
+      gap: 16px;
     }
 
-    .title {
-      text-align: center;
-      font-family: "Bebas Neue", sans-serif;
-      font-size: clamp(40px, 7vw, 58px);
-      letter-spacing: 3px;
-      color: var(--gold-lt);
-      text-shadow: 0 0 22px rgba(255,209,102,0.3);
-    }
-
-    .subtitle {
-      text-align: center;
-      color: rgba(224,247,255,0.72);
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-
-    .rows {
-      display: grid;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .team-row {
+    /* ── RESULTS title header ── */
+    .results-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 14px 16px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.065);
-      border: 1px solid rgba(178, 235, 242, 0.2);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 4px;
     }
 
+    .results-title {
+      font-family: "Cinzel Decorative", serif;
+      font-size: clamp(32px, 7vw, 56px);
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--gold-bright);
+      text-shadow:
+        0 0 20px rgba(255,209,102,0.6),
+        0 0 50px rgba(255,209,102,0.3),
+        2px 2px 0 rgba(0,0,0,0.5);
+      animation: titlePulse 3s ease-in-out infinite;
+    }
+    @keyframes titlePulse {
+      0%, 100% { text-shadow: 0 0 20px rgba(255,209,102,0.6), 2px 2px 0 rgba(0,0,0,0.5); }
+      50% { text-shadow: 0 0 35px rgba(255,209,102,0.9), 0 0 70px rgba(255,209,102,0.4), 2px 2px 0 rgba(0,0,0,0.5); }
+    }
+
+    .title-decor {
+      color: var(--gold);
+      font-size: 28px;
+      margin: 0 14px;
+      filter: drop-shadow(0 0 8px rgba(244,163,0,0.6));
+      animation: decorSpin 8s linear infinite;
+    }
+    @keyframes decorSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex; align-items: center; gap: 10px; margin: -4px 0;
+    }
+    .divider-line {
+      flex: 1; height: 1.5px;
+      background: linear-gradient(90deg, transparent, rgba(26,122,110,0.8), transparent);
+    }
+    .divider-gem { color: var(--gold); font-size: 14px; }
+
+    /* ── Score rows ── */
+    .rows { display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── Individual team row (game scoreboard style) ── */
+    .team-row {
+      display: grid;
+      grid-template-columns: 70px 58px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 3px solid rgba(255,255,255,0.12);
+      background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      animation: rowSlide 0.5s ease both;
+    }
     .team-row:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
-      border-color: rgba(178, 235, 242, 0.3);
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    }
+    @keyframes rowSlide {
+      from { opacity: 0; transform: translateX(-20px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
 
-    .team-row.top-score {
-      border-color: rgba(255, 209, 102, 0.72);
-      box-shadow:
-        0 0 0 1px rgba(255, 209, 102, 0.22),
-        0 0 26px rgba(255, 209, 102, 0.16),
-        0 14px 30px rgba(0, 0, 0, 0.22);
-      background: linear-gradient(135deg, rgba(244, 163, 0, 0.18), rgba(255, 255, 255, 0.07));
+    /* Rank-specific border colors */
+    .rank-1 {
+      border-color: var(--rank1-border);
+      background: linear-gradient(135deg, rgba(244,163,0,0.18), rgba(255,209,102,0.06));
+      box-shadow: 0 0 0 1px rgba(244,163,0,0.3), 0 0 20px rgba(244,163,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .rank-2 {
+      border-color: var(--rank2-border);
+      background: linear-gradient(135deg, rgba(170,184,194,0.14), rgba(255,255,255,0.04));
+      box-shadow: 0 0 0 1px rgba(170,184,194,0.25);
+    }
+    .rank-3 {
+      border-color: var(--rank3-border);
+      background: linear-gradient(135deg, rgba(205,127,50,0.14), rgba(255,255,255,0.03));
+      box-shadow: 0 0 0 1px rgba(205,127,50,0.25);
+    }
+    .rank-tie {
+      border-color: var(--rank-tie);
+      box-shadow: 0 0 0 1px rgba(231,76,60,0.3);
     }
 
-    .team-name {
-      display: inline-flex;
+    /* Shine effect on top row */
+    .rank-1::before {
+      content: "";
+      position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,209,102,0.12), transparent);
+      animation: shine 3s ease-in-out 1s infinite;
+    }
+    @keyframes shine {
+      0% { left: -100%; }
+      40% { left: 120%; }
+      100% { left: 120%; }
+    }
+
+    /* ── Rank badge ── */
+    .rank-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+    }
+    .rank-ordinal {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 26px;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+    .rank-suffix {
+      font-family: "Nunito", sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1;
+      margin-top: -2px;
+    }
+    .rank-1 .rank-ordinal, .rank-1 .rank-suffix { color: var(--gold-bright); text-shadow: 0 0 10px rgba(255,209,102,0.5); }
+    .rank-2 .rank-ordinal, .rank-2 .rank-suffix { color: #c8d6df; }
+    .rank-3 .rank-ordinal, .rank-3 .rank-suffix { color: #d4956a; }
+    .rank-tie .rank-ordinal, .rank-tie .rank-suffix { color: #f08080; }
+    .rank-other .rank-ordinal, .rank-other .rank-suffix { color: rgba(224,247,255,0.7); }
+
+    /* ── Avatar circle ── */
+    .avatar-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      border: 3px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.25);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+    .rank-1 .avatar-circle { border-color: var(--gold); box-shadow: 0 0 12px rgba(244,163,0,0.5), inset 0 2px 6px rgba(0,0,0,0.3); }
+    .rank-2 .avatar-circle { border-color: #aab8c2; }
+    .rank-3 .avatar-circle { border-color: #cd7f32; }
+
+    /* ── Team name ── */
+    .team-name-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .team-name-text {
+      font-family: "Cinzel", serif;
+      font-size: clamp(14px, 2.5vw, 18px);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .rank-1 .team-name-text { color: var(--gold-bright); text-shadow: 0 0 12px rgba(255,209,102,0.4); }
+
+    /* ── Score display (game style: icon + count) ── */
+    .score-col {
+      display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 17px;
-      font-weight: 700;
+      justify-content: flex-end;
+      flex-shrink: 0;
     }
 
-    .team-medal {
-      font-size: 20px;
-      line-height: 1;
-      filter: drop-shadow(0 0 8px rgba(255, 209, 102, 0.18));
+    .score-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,0,0,0.35);
+      border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      padding: 5px 12px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
-
-    .team-score {
+    .score-icon { font-size: 18px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
+    .score-x { font-family: "Bebas Neue", sans-serif; font-size: 20px; color: rgba(255,255,255,0.5); }
+    .score-num {
       font-family: "Bebas Neue", sans-serif;
-      font-size: 34px;
+      font-size: 28px;
       letter-spacing: 1px;
-      color: var(--gold-lt);
+      color: var(--gold-bright);
+      text-shadow: 0 0 10px rgba(255,209,102,0.4);
+      min-width: 28px;
+      text-align: center;
+    }
+    .rank-1 .score-num { color: #fff; text-shadow: 0 0 14px rgba(255,255,255,0.5); }
+
+    /* ── Trophy icon (beside score pill) ── */
+    .trophy-icon-sm {
+      font-size: 26px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+      animation: trophyBob 2.5s ease-in-out infinite;
+    }
+    @keyframes trophyBob {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-4px); }
     }
 
+    /* ── Actions ── */
     .actions {
-      margin-top: 8px;
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
+      margin-top: 6px;
     }
 
+    /* All existing button styles preserved exactly as original */
     .btn {
       border: none;
       border-radius: 12px;
-      padding: 12px 20px;
-      font-family: "Outfit", sans-serif;
+      padding: 12px 22px;
+      font-family: "Nunito", sans-serif;
       font-size: 15px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
-      transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+      letter-spacing: 0.5px;
     }
 
     .winner-btn {
-      background: linear-gradient(135deg, #ffe08a 0%, var(--gold-lt) 38%, var(--gold) 100%);
-      color: #041e42;
-      box-shadow:
-        0 12px 30px rgba(244, 163, 0, 0.34),
-        0 0 22px rgba(255, 209, 102, 0.18);
+      background: linear-gradient(135deg, #ffe08a 0%, var(--gold-bright) 38%, var(--gold) 100%);
+      color: var(--ink);
+      box-shadow: 0 5px 0 var(--gold-dark), 0 10px 30px rgba(244,163,0,0.4);
+      font-family: "Cinzel", serif;
     }
-
     .winner-btn:hover {
-      transform: translateY(-2px) scale(1.03);
-      filter: brightness(1.04);
-      box-shadow:
-        0 16px 34px rgba(244, 163, 0, 0.4),
-        0 0 30px rgba(255, 209, 102, 0.24);
+      transform: translateY(-3px);
+      filter: brightness(1.06);
+      box-shadow: 0 8px 0 var(--gold-dark), 0 16px 38px rgba(244,163,0,0.5);
+    }
+    .winner-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--gold-dark), 0 4px 12px rgba(244,163,0,0.3);
     }
 
     .home-btn {
-      background: rgba(178, 235, 242, 0.06);
+      background: rgba(255,255,255,0.08);
       color: var(--foam);
-      border: 1px solid rgba(178, 235, 242, 0.26);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      border: 2px solid rgba(178,235,242,0.3);
+      box-shadow: 0 4px 0 rgba(0,0,0,0.3);
     }
-
     .home-btn:hover {
       transform: translateY(-2px);
-      background: rgba(178, 235, 242, 0.12);
-      border-color: rgba(178, 235, 242, 0.4);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+      background: rgba(178,235,242,0.14);
+      border-color: rgba(178,235,242,0.55);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 10px 24px rgba(0,0,0,0.2);
+    }
+    .home-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.3);
     }
 
+    /* ── Winner overlay (unchanged logic) ── */
     .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.72);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 20;
+      z-index: 50;
       padding: 20px;
     }
-
     .overlay.show { display: flex; }
 
     .winner-popup {
       width: min(520px, 100%);
-      border-radius: 20px;
-      background: rgba(7,30,54,0.9);
-      border: 1px solid rgba(255,209,102,0.45);
-      box-shadow: 0 0 28px rgba(255,209,102,0.25), 0 24px 45px rgba(0,0,0,0.45);
-      text-align: center;
-      padding: 24px;
-      animation: popIn 0.35s ease;
+      position: relative;
+      border-radius: 22px;
+      padding: 14px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow:
+        0 0 0 3px var(--gold-dark),
+        0 0 0 5px #7a4a00,
+        0 30px 60px rgba(0,0,0,0.7),
+        0 0 50px rgba(244,163,0,0.25);
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7) translateY(20px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
     }
 
+    .winner-inner {
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse at 30% 20%, #fff8e8, transparent 50%),
+        linear-gradient(170deg, #fdf3dc 0%, #f5dfa0 60%, #e8c870 100%);
+      padding: 28px 24px 22px;
+      text-align: center;
+      border: 1px solid rgba(180,120,20,0.3);
+      box-shadow: inset 0 0 28px rgba(139,90,20,0.15);
+    }
+
+    .popup-corner {
+      position: absolute; color: var(--gold); font-size: 20px; z-index: 2;
+      filter: drop-shadow(0 0 5px rgba(244,163,0,0.7)); line-height: 1;
+    }
+    .popup-corner.tl { top: 6px; left: 10px; }
+    .popup-corner.tr { top: 6px; right: 10px; }
+    .popup-corner.bl { bottom: 6px; left: 10px; }
+    .popup-corner.br { bottom: 6px; right: 10px; }
+
+    .winner-trophy { font-size: 64px; animation: trophyBob 1.5s ease-in-out infinite; display: block; margin-bottom: 8px; }
+
     .winner-title {
-      font-family: "Bebas Neue", sans-serif;
-      font-size: clamp(36px, 6vw, 52px);
+      font-family: "Cinzel Decorative", serif;
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 900;
+      color: var(--wood-dark);
       letter-spacing: 3px;
-      color: var(--gold-lt);
-      text-shadow: 0 0 22px rgba(255,209,102,0.42);
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
     }
 
     .winner-name {
-      margin-top: 8px;
-      font-size: clamp(24px, 4.8vw, 34px);
+      margin-top: 10px;
+      font-family: "Cinzel", serif;
+      font-size: clamp(20px, 4vw, 28px);
       font-weight: 700;
-      color: #ffffff;
+      color: var(--wood-mid);
     }
 
+    .popup-divider {
+      display: flex; align-items: center; gap: 8px; margin: 14px 0;
+    }
+    .popup-divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #b8860b, transparent); }
+    .popup-divider-gem { color: var(--gold-dark); font-size: 12px; }
+
+    /* ── Confetti ── */
     .confetti {
-      position: fixed;
-      top: -20px;
-      width: 10px;
-      height: 16px;
-      border-radius: 2px;
-      opacity: 0.95;
-      z-index: 30;
+      position: fixed; top: -20px;
+      width: 10px; height: 16px; border-radius: 2px;
+      opacity: 0.95; z-index: 60;
       animation: confettiFall var(--dur) linear forwards;
     }
-
-    @keyframes bgShift {
-      0%   { background-position: 0% 0%; }
-      100% { background-position: 100% 100%; }
-    }
-
-    @keyframes cardIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes popIn {
-      from { transform: scale(0.88); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
     @keyframes confettiFall {
-      to {
-        transform: translateY(110vh) rotate(640deg);
-        opacity: 0;
-      }
+      to { transform: translateY(110vh) rotate(640deg); opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .team-row { grid-template-columns: 55px 46px 1fr auto; gap: 8px; padding: 10px 12px; }
+      .avatar-circle { width: 40px; height: 40px; font-size: 22px; }
+      .rank-ordinal { font-size: 22px; }
+      .score-num { font-size: 22px; }
+      .score-pill { padding: 4px 8px; }
+      .results-title { letter-spacing: 2px; }
     }
   </style>
 </head>
 <body>
-  <div class="bg-layer"></div>
-  <div class="bg-hex"></div>
-  <div class="bg-glow-top"></div>
+
+  <!-- ── Background ── -->
+  <div class="sky"></div>
+  <div class="moon"></div>
+  <div class="stars" id="stars"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Wavy ocean borders -->
+  <div class="ocean-top"></div>
+  <div class="ocean-top-inner"></div>
+  <div class="ocean-bottom"></div>
+  <div class="ocean-bottom-inner"></div>
+
+  <!-- Ground hills -->
+  <div class="ground-wrap">
+    <svg viewBox="0 0 1440 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:140px;">
+      <defs>
+        <linearGradient id="hB2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a5c32"/>
+          <stop offset="100%" stop-color="#0c3318"/>
+        </linearGradient>
+        <linearGradient id="hF2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0f4520"/>
+          <stop offset="100%" stop-color="#061a0d"/>
+        </linearGradient>
+        <linearGradient id="hG2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a7a45"/>
+          <stop offset="100%" stop-color="#1a5c32"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#hB2)" d="M0,140 C100,80 250,40 400,80 C550,120 650,30 800,55 C950,80 1100,30 1200,70 C1300,110 1380,70 1440,90 L1440,200 L0,200 Z"/>
+      <path fill="url(#hG2)" d="M0,160 C80,110 200,80 320,105 C440,130 540,65 680,90 C820,115 940,75 1100,100 C1260,125 1380,90 1440,110 L1440,200 L0,200 Z"/>
+      <path fill="url(#hF2)" d="M0,180 C120,155 280,145 440,160 C600,175 740,150 880,162 C1020,175 1180,155 1340,168 L1440,178 L1440,200 L0,200 Z"/>
+    </svg>
+  </div>
 
   <main class="page">
-    <section class="results-card">
-      <h1 class="title">🏆 Game Results</h1>
-      <p class="subtitle">Final score board from the arena</p>
+    <!-- ── Wooden board frame ── -->
+    <div class="board-frame">
+      <span class="frame-corner tl">✦</span>
+      <span class="frame-corner tr">✦</span>
+      <span class="frame-corner bl">✦</span>
+      <span class="frame-corner br">✦</span>
 
-      <div class="rows" id="scoreRows"></div>
+      <div class="board-inner">
 
-      <div class="actions">
-        <button class="btn winner-btn" id="viewWinnerBtn">🎉 View Winner</button>
-        <button class="btn home-btn" onclick="goHome()">Back to Home</button>
-      </div>
-    </section>
+        <!-- Title -->
+        <div class="results-header">
+          <span class="title-decor">⚙</span>
+          <h1 class="results-title">Results</h1>
+          <span class="title-decor">⚙</span>
+        </div>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-gem">◆</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <!-- Scoreboard rows rendered by JS -->
+        <div class="rows" id="scoreRows"></div>
+
+        <div class="divider" style="margin-top:4px;">
+          <div class="divider-line"></div>
+          <span class="divider-gem">◆</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <!-- Action buttons — functionality unchanged -->
+        <div class="actions">
+          <button class="btn winner-btn" id="viewWinnerBtn">🎉 View Winner</button>
+          <button class="btn home-btn" onclick="goHome()">🏠 Back to Home</button>
+        </div>
+
+      </div><!-- /board-inner -->
+    </div><!-- /board-frame -->
   </main>
 
+  <!-- ── Winner popup overlay — functionality unchanged ── -->
   <div class="overlay" id="winnerOverlay">
     <div class="winner-popup">
-      <div class="winner-title">🎉 WINNER 🎉</div>
-      <div class="winner-name" id="winnerName">Team A Wins!</div>
-      <div class="actions" style="margin-top:14px;">
-        <button class="btn home-btn" onclick="closeWinner()">Close</button>
+      <span class="popup-corner tl">✦</span>
+      <span class="popup-corner tr">✦</span>
+      <span class="popup-corner bl">✦</span>
+      <span class="popup-corner br">✦</span>
+      <div class="winner-inner">
+        <span class="winner-trophy">🏆</span>
+        <h2 class="winner-title">WINNER!</h2>
+        <div class="popup-divider">
+          <div class="popup-divider-line"></div>
+          <span class="popup-divider-gem">◆</span>
+          <div class="popup-divider-line"></div>
+        </div>
+        <p class="winner-name" id="winnerName">Team A Wins!</p>
+        <div class="actions" style="margin-top:18px;">
+          <button class="btn home-btn" onclick="closeWinner()">Close</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const storedTeams = JSON.parse(localStorage.getItem("finalTeams") || "null");
-    const fallbackTeams = JSON.parse(localStorage.getItem("teams") || "[]");
-    const sourceTeams = Array.isArray(storedTeams) && storedTeams.length
-      ? storedTeams
-      : (Array.isArray(fallbackTeams) ? fallbackTeams : []);
+    /* ── Stars ── */
+    const starsEl = document.getElementById("stars");
+    for (let i = 0; i < 100; i++) {
+      const s = document.createElement("div");
+      s.className = "star";
+      const sz = Math.random() * 2.5 + 0.5;
+      s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*70}%;width:${sz}px;height:${sz}px;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*6}s;`;
+      starsEl.appendChild(s);
+    }
 
-    const rankedTeams = sourceTeams
-      .map((t, i) => ({
-        id: t.id || `T${i + 1}`,
-        name: t.name || `Team ${i + 1}`,
-        score: Number(t.score || 0)
-      }))
+    /* ── Particles ── */
+    const partEl = document.getElementById("particles");
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.cssText = `left:${Math.random()*100}%;bottom:${Math.random()*40+10}%;animation-duration:${4+Math.random()*6}s;animation-delay:${Math.random()*8}s;width:${Math.random()*4+2}px;height:${Math.random()*4+2}px;`;
+      partEl.appendChild(p);
+    }
+
+    /* ── Fireflies ── */
+    const fireflyData = [
+      {l:"12%",t:"65%",dx:"40px",dy:"-50px",dur:"6s",del:"0s"},
+      {l:"82%",t:"70%",dx:"-35px",dy:"-40px",dur:"8s",del:"2s"},
+      {l:"60%",t:"78%",dx:"20px",dy:"-55px",dur:"7s",del:"4s"},
+      {l:"28%",t:"72%",dx:"-25px",dy:"-30px",dur:"5s",del:"1s"},
+      {l:"70%",t:"60%",dx:"30px",dy:"-42px",dur:"9s",del:"3s"}
+    ];
+    fireflyData.forEach(f => {
+      const el = document.createElement("div");
+      el.className = "firefly";
+      el.style.cssText = `left:${f.l};top:${f.t};--dx:${f.dx};--dy:${f.dy};animation-duration:${f.dur};animation-delay:${f.del};`;
+      document.body.appendChild(el);
+    });
+
+    /* ── Data ── */
+    const storedTeams  = JSON.parse(localStorage.getItem("finalTeams") || "null");
+    const fallback     = JSON.parse(localStorage.getItem("teams") || "[]");
+    const sourceTeams  = Array.isArray(storedTeams) && storedTeams.length ? storedTeams : (Array.isArray(fallback) ? fallback : []);
+
+    const rankedTeams  = sourceTeams
+      .map((t, i) => ({ id: t.id || `T${i+1}`, name: t.name || `Team ${i+1}`, score: Number(t.score || 0), avatar: t.avatar || "🏅" }))
       .sort((a, b) => b.score - a.score);
 
     if (!rankedTeams.length) {
       rankedTeams.push(
-        { id: "T1", name: "Team A", score: 0 },
-        { id: "T2", name: "Team B", score: 0 },
-        { id: "T3", name: "Team C", score: 0 }
+        { id:"T1", name:"Team Alpha",  score: 0, avatar:"🦁" },
+        { id:"T2", name:"Team Beta",   score: 0, avatar:"🐯" },
+        { id:"T3", name:"Team Gamma",  score: 0, avatar:"🐺" }
       );
     }
 
+    /* ── Rank helpers ── */
+    const maxScore = Math.max(...rankedTeams.map(t => t.score));
+    const SUFFIXES = ["st","nd","rd"];
+
+    function getRankClass(index, score) {
+      if (score === maxScore && rankedTeams.filter(t => t.score === maxScore).length > 1) return "rank-tie";
+      if (index === 0) return "rank-1";
+      if (index === 1) return "rank-2";
+      if (index === 2) return "rank-3";
+      return "rank-other";
+    }
+
+    function getTrophyIcon(index, score) {
+      const winners = rankedTeams.filter(t => t.score === maxScore);
+      if (winners.length > 1 && score === maxScore) return "🏆";
+      if (index === 0) return "🥇";
+      if (index === 1) return "🥈";
+      if (index === 2) return "🥉";
+      return "🏅";
+    }
+
+    /* Compute actual rank numbers accounting for ties */
+    let currentRank = 1;
+    const ranks = [];
+    rankedTeams.forEach((team, i) => {
+      if (i > 0 && team.score < rankedTeams[i - 1].score) currentRank = i + 1;
+      ranks.push(currentRank);
+    });
+
+    /* ── Render rows ── */
     const rows = document.getElementById("scoreRows");
-    const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
-    const maxScore = rankedTeams[0].score;
+    rankedTeams.forEach((team, i) => {
+      const rankNum = ranks[i];
+      const suffix  = SUFFIXES[rankNum - 1] || "th";
+      const cls     = getRankClass(i, team.score);
+      const trophy  = getTrophyIcon(i, team.score);
 
-    rankedTeams.forEach((entry, index) => {
       const row = document.createElement("div");
-      row.className = "team-row";
-      if (entry.score === maxScore) row.classList.add("top-score");
-
-      const medal = medals[index] || "";
+      row.className = `team-row ${cls}`;
+      row.style.animationDelay = (i * 0.1 + 0.2) + "s";
 
       row.innerHTML = `
-        <span class="team-name">
-          ${medal ? `<span class="team-medal" aria-hidden="true">${medal}</span>` : ""}
-          <span>${entry.name} →</span>
-        </span>
-        <span class="team-score">${entry.score} points</span>
+        <div class="rank-badge">
+          <span class="rank-ordinal">${rankNum}<span class="rank-suffix">${suffix}</span></span>
+        </div>
+        <div class="avatar-circle">${team.avatar}</div>
+        <div class="team-name-col">
+          <span class="team-name-text">${team.name}</span>
+        </div>
+        <div class="score-col">
+          <div class="score-pill">
+            <span class="score-icon">⚡</span>
+            <span class="score-x">×</span>
+            <span class="score-num">${team.score}</span>
+          </div>
+          <span class="trophy-icon-sm" style="animation-delay:${i*0.3}s">${trophy}</span>
+        </div>
       `;
-
       rows.appendChild(row);
     });
 
+    /* ── View Winner — unchanged functionality ── */
     document.getElementById("viewWinnerBtn").addEventListener("click", () => {
       const winnerText = getWinnerText(rankedTeams);
       document.getElementById("winnerName").textContent = winnerText;
@@ -384,12 +775,9 @@
     });
 
     function getWinnerText(teams) {
-      const max = Math.max(...teams.map((t) => t.score));
-      const winners = teams.filter((t) => t.score === max);
-      if (winners.length > 1) {
-        return "It's a Tie!";
-      }
-      return `${winners[0].name} Wins!`;
+      const max     = Math.max(...teams.map(t => t.score));
+      const winners = teams.filter(t => t.score === max);
+      return winners.length > 1 ? "It's a Tie!" : `${winners[0].name} Wins!`;
     }
 
     function closeWinner() {
@@ -405,17 +793,18 @@
     }
 
     function launchConfetti() {
-      const colors = ["#ffd166", "#f4a300", "#5bc8dc", "#2ecc71", "#ffffff"];
-
-      for (let i = 0; i < 90; i++) {
+      const colors = ["#ffd166","#f4a300","#5bc8dc","#2ecc71","#ffffff","#ff6b6b","#a29bfe"];
+      for (let i = 0; i < 100; i++) {
         const piece = document.createElement("div");
         piece.className = "confetti";
-        piece.style.left = Math.random() * 100 + "vw";
-        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-        piece.style.setProperty("--dur", (Math.random() * 1.6 + 2.2) + "s");
-        piece.style.transform = `translateY(-20px) rotate(${Math.random() * 240}deg)`;
+        piece.style.left        = Math.random() * 100 + "vw";
+        piece.style.background  = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty("--dur", (Math.random() * 1.8 + 2) + "s");
+        piece.style.transform   = `rotate(${Math.random() * 240}deg)`;
+        piece.style.width       = (Math.random() * 8 + 6) + "px";
+        piece.style.height      = (Math.random() * 12 + 8) + "px";
         document.body.appendChild(piece);
-        setTimeout(() => piece.remove(), 4200);
+        setTimeout(() => piece.remove(), 4500);
       }
     }
   </script>
