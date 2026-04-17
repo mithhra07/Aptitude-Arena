@@ -3,323 +3,693 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <title>Sample Question | Aptitude Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <title>Sample Round | Aptitude Arena</title>
 
   <style>
     :root {
-      --ocean-deep: #041e42;
-      --ocean-mid: #0a3d62;
-      --ocean-bright: #1b6ca8;
-      --foam: #e0f7ff;
+      --wood-dark: #3b1f0a;
+      --wood-mid: #6b3a1f;
       --gold: #f4a300;
-      --gold-light: #ffd166;
-      --card-glass: rgba(255,255,255,0.07);
-      --card-border: rgba(178,235,242,0.2);
-      --success: #53d68a;
-      --danger: #ff7f7f;
+      --gold-bright: #ffd166;
+      --gold-dark: #c47d00;
+      --parchment: #fdf3dc;
+      --ink: #2a1505;
+      --foam: #e0f7ff;
+      --danger: #c0392b;
+      --ok: #2ecc71;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       min-height: 100vh;
+      font-family: "Nunito", sans-serif;
       overflow-x: hidden;
-      font-family: "Outfit", sans-serif;
-      background: var(--ocean-deep);
       position: relative;
       color: var(--foam);
     }
 
-    .bg-mesh {
+    /* ── Sky background ── */
+    .sky {
       position: fixed;
       inset: 0;
+      background: linear-gradient(180deg, #0d1f45 0%, #1a3a6b 35%, #2d6a9f 65%, #5bafd6 85%, #87ceeb 100%);
       z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(27,108,168,0.55), transparent),
-        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(10,61,98,0.8), transparent),
-        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4,30,66,1), transparent);
-      animation: meshShift 14s ease-in-out infinite alternate;
     }
 
-    .bg-grid {
+    /* ── Stars ── */
+    .stars {
       position: fixed;
       inset: 0;
-      z-index: 0;
-      background-image:
-        linear-gradient(rgba(178,235,242,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(178,235,242,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-    }
-
-    .bg-glow {
-      position: fixed;
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 700px;
-      height: 400px;
-      background: radial-gradient(ellipse, rgba(244,163,0,0.18), transparent 70%);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(60px);
-      opacity: 0.18;
-      z-index: 0;
-      animation: orbFloat linear infinite;
-      pointer-events: none;
-    }
-
-    .orb-1 { width: 300px; height: 300px; background: #1b6ca8; top: 10%; left: 5%; animation-duration: 20s; }
-    .orb-2 { width: 200px; height: 200px; background: #f4a300; bottom: 15%; right: 8%; animation-duration: 27s; animation-direction: reverse; }
-    .orb-3 { width: 160px; height: 160px; background: #0a3d62; top: 60%; left: 40%; animation-duration: 18s; }
-
-    @keyframes meshShift {
-      0%   { filter: hue-rotate(0deg) brightness(1); }
-      100% { filter: hue-rotate(15deg) brightness(1.1); }
-    }
-
-    @keyframes orbFloat {
-      0%   { transform: translate(0,0) scale(1); }
-      33%  { transform: translate(30px,-40px) scale(1.1); }
-      66%  { transform: translate(-20px,25px) scale(0.95); }
-      100% { transform: translate(0,0) scale(1); }
-    }
-
-    .container {
-      position: relative;
       z-index: 1;
+      pointer-events: none;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      animation: twinkle linear infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
+    /* ── Floating particles ── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold-bright);
+      animation: floatUp linear infinite;
+      opacity: 0;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      20% { opacity: 0.8; }
+      80% { opacity: 0.4; }
+      100% { transform: translateY(-120px) scale(0.3); opacity: 0; }
+    }
+
+    /* ── Glowing moon ── */
+    .moon {
+      position: fixed;
+      top: 6%;
+      right: 12%;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fffde8, #f4d96a 60%, #d4a820);
+      box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.15);
+      z-index: 4;
+      animation: moonGlow 4s ease-in-out infinite alternate;
+    }
+    @keyframes moonGlow {
+      0% { box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.12); }
+      100% { box-shadow: 0 0 45px 15px rgba(255,220,80,0.6), 0 0 110px 40px rgba(255,200,50,0.22); }
+    }
+
+    /* ── Fireflies ── */
+    .firefly {
+      position: fixed;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #b8ff80;
+      box-shadow: 0 0 6px 3px rgba(184,255,128,0.7);
+      z-index: 5;
+      animation: fireflyFloat linear infinite;
+      pointer-events: none;
+    }
+    @keyframes fireflyFloat {
+      0% { transform: translate(0,0) scale(1); opacity: 0; }
+      15% { opacity: 1; }
+      50% { transform: translate(var(--dx), var(--dy)) scale(0.8); opacity: 0.8; }
+      85% { opacity: 1; }
+      100% { transform: translate(0,0) scale(1); opacity: 0; }
+    }
+
+    /* ── Ground / Hills ── */
+    .ground-wrap {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* ── Page layout ── */
+    .container {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
+      position: relative;
+      z-index: 10;
     }
 
-    .sample-card {
-      width: min(760px, 100%);
-      border-radius: 24px;
-      background: var(--card-glass);
-      border: 1px solid var(--card-border);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      box-shadow: 0 20px 55px rgba(0,0,0,0.4), 0 0 30px rgba(91,200,220,0.08);
-      padding: clamp(22px, 4vw, 34px);
+    /* ── Wooden frame (outer) ── */
+    .wood-frame {
+      position: relative;
+      padding: 14px;
+      border-radius: 22px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.03) 0px,
+          rgba(0,0,0,0.04) 2px,
+          transparent 2px,
+          transparent 18px
+        ),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow:
+        0 0 0 3px #c47d00,
+        0 0 0 5px #7a4a00,
+        0 25px 60px rgba(0,0,0,0.6),
+        0 0 40px rgba(244,163,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+      width: min(520px, 100%);
+      animation: frameAppear 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes frameAppear {
+      from { transform: translateY(30px) scale(0.9); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* Corner ornaments */
+    .wood-frame::before, .wood-frame::after {
+      content: "✦";
+      position: absolute;
+      color: var(--gold);
+      font-size: 20px;
+      line-height: 1;
+      filter: drop-shadow(0 0 6px rgba(244,163,0,0.6));
+    }
+    .wood-frame::before { top: 6px; left: 10px; }
+    .wood-frame::after  { top: 6px; right: 10px; }
+
+    .corner-bottom-left, .corner-bottom-right {
+      position: absolute;
+      color: var(--gold);
+      font-size: 20px;
+      line-height: 1;
+      filter: drop-shadow(0 0 6px rgba(244,163,0,0.6));
+      z-index: 2;
+    }
+    .corner-bottom-left { bottom: 6px; left: 10px; }
+    .corner-bottom-right { bottom: 6px; right: 10px; }
+
+    /* ── Parchment inner ── */
+    .parchment {
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse at 30% 20%, #fff8e8, transparent 50%),
+        linear-gradient(170deg, #fdf3dc 0%, #f5dfa0 60%, #e8c870 100%);
+      padding: clamp(20px, 4vw, 32px);
+      box-shadow: inset 0 0 30px rgba(139,90,20,0.15), inset 0 2px 0 rgba(255,255,255,0.6);
+      border: 1px solid rgba(180,120,20,0.3);
       display: flex;
       flex-direction: column;
-      gap: 18px;
-      animation: floatIn 0.5s ease;
+      align-items: center;
+      gap: 0;
     }
 
+    /* ── Warm-up badge ── */
     .eyebrow {
-      font-size: 11px;
-      font-weight: 600;
+      font-family: "Cinzel", serif;
+      font-size: 10px;
+      font-weight: 700;
       letter-spacing: 4px;
       text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0.9;
-      text-align: center;
+      color: var(--wood-mid);
+      opacity: 0.8;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .eyebrow::before, .eyebrow::after {
+      content: "";
+      display: inline-block;
+      width: 28px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #b8860b);
+    }
+    .eyebrow::after {
+      background: linear-gradient(90deg, #b8860b, transparent);
     }
 
+    /* ── Shield icon ── */
+    .shield-wrap {
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .shield-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd166, #f4a300);
+      box-shadow: 0 4px 0 #c47d00, 0 6px 20px rgba(244,163,0,0.4);
+      font-size: 28px;
+      animation: shieldBob 3s ease-in-out infinite;
+    }
+    @keyframes shieldBob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-6px) rotate(3deg); }
+    }
+
+    /* ── Title ── */
     .title {
-      font-family: "Bebas Neue", sans-serif;
+      font-family: "Cinzel Decorative", serif;
+      font-weight: 900;
+      font-size: clamp(20px, 5vw, 28px);
+      text-align: center;
+      color: var(--wood-dark);
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.5), 0 2px 8px rgba(139,80,10,0.3);
+      letter-spacing: 1px;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      margin: 12px 0;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #b8860b, transparent);
+    }
+    .divider-gem { color: var(--gold-dark); font-size: 12px; }
+
+    /* ── Question card ── */
+    .question-wrap {
+      width: 100%;
+      background: rgba(59,31,10,0.07);
+      border: 1.5px solid rgba(180,120,20,0.3);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+    }
+    .q-label {
+      font-family: "Cinzel", serif;
+      font-size: 9px;
+      font-weight: 700;
       letter-spacing: 3px;
-      font-size: clamp(40px, 7vw, 54px);
-      line-height: 1;
-      text-align: center;
-      background: linear-gradient(160deg, #ffffff 0%, #b2ebf2 45%, #5bc8dc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 20px rgba(91,200,220,0.35));
+      text-transform: uppercase;
+      color: var(--wood-mid);
+      margin-bottom: 8px;
+      opacity: 0.7;
     }
-
-    .question {
-      font-size: clamp(20px, 3.3vw, 28px);
-      line-height: 1.35;
-      text-align: center;
+    .question-text {
+      font-family: "Cinzel", serif;
+      font-size: clamp(14px, 2.8vw, 17px);
       font-weight: 600;
-      margin-top: 2px;
-      color: #f3fbff;
+      color: var(--ink);
+      line-height: 1.55;
+      text-align: center;
     }
 
+    /* ── Options ── */
     .options {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: 4px;
+      width: 100%;
+      margin-bottom: 14px;
     }
 
-    .option {
+    .option-btn {
+      position: relative;
       width: 100%;
       text-align: left;
-      border-radius: 14px;
-      border: 1px solid rgba(178,235,242,0.25);
-      background: rgba(255,255,255,0.06);
-      color: #e0f7ff;
-      padding: 14px 16px;
-      font-family: "Outfit", sans-serif;
-      font-size: 16px;
-      font-weight: 500;
+      border-radius: 10px;
+      border: 2px solid rgba(180,120,20,0.28);
+      background: rgba(255,250,230,0.7);
+      color: var(--ink);
+      padding: 11px 14px 11px 38px;
+      font-family: "Nunito", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      transition: all 0.2s ease;
     }
-
-    .option:hover {
+    .option-btn .opt-letter {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: "Cinzel", serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--wood-mid);
+      opacity: 0.65;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--gold);
+      background: rgba(255,250,220,0.9);
+      box-shadow: 0 4px 14px rgba(244,163,0,0.2);
       transform: translateY(-2px);
-      border-color: rgba(178,235,242,0.58);
-      background: rgba(255,255,255,0.11);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
     }
-
-    .option.selected {
-      border-color: rgba(255,209,102,0.8);
-      background: rgba(244,163,0,0.16);
-      box-shadow: 0 0 0 2px rgba(244,163,0,0.15);
+    .option-btn.selected {
+      border-color: var(--gold-dark);
+      background: linear-gradient(135deg, rgba(255,209,102,0.35), rgba(244,163,0,0.2));
+      box-shadow: 0 0 0 3px rgba(244,163,0,0.2), 0 4px 14px rgba(244,163,0,0.2);
     }
+    .option-btn.correct {
+      border-color: #2a7e45;
+      background: linear-gradient(135deg, rgba(46,204,113,0.25), rgba(39,174,96,0.15));
+      box-shadow: 0 0 0 3px rgba(46,204,113,0.2);
+      color: #1a5c30;
+    }
+    .option-btn.wrong {
+      border-color: var(--danger);
+      background: rgba(192,57,43,0.1);
+      animation: shakeWrong 0.4s ease;
+      color: var(--danger);
+    }
+    @keyframes shakeWrong {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    .option-btn:disabled { cursor: default; }
 
+    /* ── Result message ── */
+    .result-msg {
+      min-height: 22px;
+      text-align: center;
+      font-family: "Nunito", sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      margin-bottom: 4px;
+    }
+    .result-msg.show { opacity: 1; transform: translateY(0); }
+    .result-msg.correct { color: #1a6e2e; }
+    .result-msg.wrong { color: var(--danger); }
+
+    /* ── Submit button ── */
     .submit-btn {
-      position: relative;
-      margin-top: 6px;
       width: 100%;
+      margin-top: 4px;
       border: none;
-      border-radius: 14px;
-      padding: 16px 20px;
-      font-family: "Bebas Neue", sans-serif;
-      font-size: 25px;
-      letter-spacing: 3px;
-      color: var(--ocean-deep);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: "Cinzel Decorative", serif;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--ink);
       cursor: pointer;
-      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 60%, #e08800 100%);
-      box-shadow: 0 10px 40px rgba(244,163,0,0.35), 0 2px 8px rgba(0,0,0,0.3);
-      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      background: linear-gradient(135deg, #ffd166 0%, #f4a300 60%, #e09000 100%);
+      box-shadow: 0 5px 0 #a06000, 0 8px 20px rgba(160,96,0,0.4);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      position: relative;
+      top: 0;
     }
-
-    .submit-btn:hover {
-      box-shadow: 0 16px 50px rgba(244,163,0,0.5), 0 4px 16px rgba(0,0,0,0.35);
-      transform: translateY(-1px);
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 0 #a06000, 0 12px 28px rgba(160,96,0,0.45);
     }
-
-    .submit-btn:active {
-      transform: scale(0.98);
+    .submit-btn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #a06000, 0 4px 10px rgba(160,96,0,0.3);
     }
-
     .submit-btn:disabled {
       opacity: 0.55;
       cursor: not-allowed;
-      transform: none;
     }
 
-    .result {
-      min-height: 28px;
-      text-align: center;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      font-size: 16px;
+    /* ── Redirect notice ── */
+    .redirect-notice {
+      margin-top: 10px;
+      font-family: "Cinzel", serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--wood-mid);
       opacity: 0;
-      transform: translateY(4px);
-      transition: opacity 0.25s ease, transform 0.25s ease;
+      text-align: center;
+      transition: opacity 0.4s ease;
+    }
+    .redirect-notice.show { opacity: 0.7; }
+
+    /* ── Progress pip ── */
+    .progress-wrap {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+    }
+    .pip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(107,58,31,0.2);
+      border: 1.5px solid rgba(180,120,20,0.35);
+    }
+    .pip.active {
+      background: var(--gold);
+      border-color: var(--gold-dark);
+      box-shadow: 0 0 8px rgba(244,163,0,0.5);
     }
 
-    .result.show {
-      opacity: 1;
-      transform: translateY(0);
+    /* ── Confetti pieces ── */
+    @keyframes confettiFall {
+      to { transform: translateY(110vh) rotate(640deg); opacity: 0; }
     }
-
-    .result.correct { color: var(--success); animation: pulseGreen 0.45s ease; }
-    .result.wrong { color: var(--danger); animation: pulseRed 0.45s ease; }
-
-    @keyframes pulseGreen {
-      0% { text-shadow: 0 0 0 rgba(83,214,138,0); }
-      50% { text-shadow: 0 0 18px rgba(83,214,138,0.65); }
-      100% { text-shadow: 0 0 0 rgba(83,214,138,0); }
-    }
-
-    @keyframes pulseRed {
-      0% { text-shadow: 0 0 0 rgba(255,127,127,0); }
-      50% { text-shadow: 0 0 18px rgba(255,127,127,0.65); }
-      100% { text-shadow: 0 0 0 rgba(255,127,127,0); }
-    }
-
-    @keyframes floatIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 640px) {
-      .sample-card { border-radius: 18px; }
-      .option { font-size: 15px; padding: 12px 13px; }
-      .submit-btn { font-size: 23px; }
+    .confetti-piece {
+      position: fixed;
+      top: -20px;
+      width: 10px;
+      height: 16px;
+      border-radius: 2px;
+      opacity: 0.95;
+      z-index: 30;
+      animation: confettiFall var(--dur) linear forwards;
     }
   </style>
 </head>
 <body>
-  <div class="bg-mesh"></div>
-  <div class="bg-grid"></div>
-  <div class="bg-glow"></div>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
+
+  <div class="sky"></div>
+  <div class="moon"></div>
+  <div class="stars" id="stars"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Fireflies -->
+  <div class="firefly" style="left:15%;top:65%;--dx:40px;--dy:-50px;animation-duration:6s;animation-delay:0s;"></div>
+  <div class="firefly" style="left:80%;top:72%;--dx:-35px;--dy:-40px;animation-duration:8s;animation-delay:2s;"></div>
+  <div class="firefly" style="left:60%;top:80%;--dx:20px;--dy:-60px;animation-duration:7s;animation-delay:4s;"></div>
+  <div class="firefly" style="left:30%;top:75%;--dx:-25px;--dy:-30px;animation-duration:5s;animation-delay:1s;"></div>
+  <div class="firefly" style="left:70%;top:60%;--dx:30px;--dy:-45px;animation-duration:9s;animation-delay:3s;"></div>
+
+  <!-- Ground / Hills -->
+  <div class="ground-wrap">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 260" preserveAspectRatio="none" style="display:block;width:100%;height:200px;">
+      <defs>
+        <linearGradient id="hillBack" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a5c32"/>
+          <stop offset="100%" stop-color="#0c3318"/>
+        </linearGradient>
+        <linearGradient id="hillFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0f4520"/>
+          <stop offset="100%" stop-color="#061a0d"/>
+        </linearGradient>
+        <linearGradient id="hillGrass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a7a45"/>
+          <stop offset="100%" stop-color="#1a5c32"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#hillBack)" d="M0,200 C100,100 250,60 400,120 C550,180 650,50 800,80 C950,110 1100,60 1200,100 C1300,140 1380,100 1440,120 L1440,260 L0,260 Z"/>
+      <path fill="url(#hillGrass)" d="M0,220 C80,160 200,120 320,150 C440,180 540,100 680,130 C820,160 940,110 1100,140 C1260,170 1380,130 1440,150 L1440,260 L0,260 Z"/>
+      <path fill="url(#hillFront)" d="M0,245 C120,210 280,195 440,215 C600,235 740,200 880,215 C1020,230 1180,205 1340,220 C1380,225 1420,230 1440,240 L1440,260 L0,260 Z"/>
+      <!-- Trees left -->
+      <rect fill="#082010" x="60" y="168" width="8" height="30" rx="2"/>
+      <ellipse fill="#0f4520" cx="64" cy="162" rx="16" ry="20"/>
+      <ellipse fill="#1a6030" cx="64" cy="155" rx="10" ry="14"/>
+      <!-- Trees right -->
+      <rect fill="#082010" x="1320" y="152" width="8" height="30" rx="2"/>
+      <ellipse fill="#0f4520" cx="1324" cy="146" rx="18" ry="22"/>
+      <ellipse fill="#1a6030" cx="1324" cy="138" rx="11" ry="15"/>
+      <!-- Mushroom left -->
+      <rect fill="#5c2a0a" x="200" y="210" width="5" height="12" rx="2"/>
+      <ellipse fill="#cc3030" cx="202" cy="208" rx="10" ry="7"/>
+      <circle fill="white" cx="197" cy="207" r="2"/>
+      <circle fill="white" cx="205" cy="205" r="1.5"/>
+      <!-- Mushroom right -->
+      <rect fill="#5c2a0a" x="1200" y="200" width="5" height="12" rx="2"/>
+      <ellipse fill="#8a2be2" cx="1202" cy="198" rx="10" ry="7"/>
+      <circle fill="white" cx="1197" cy="197" r="2"/>
+      <circle fill="white" cx="1205" cy="195" r="1.5"/>
+    </svg>
+  </div>
 
   <main class="container">
-    <section class="sample-card">
-      <p class="eyebrow">Warm-up Question</p>
-      <h1 class="title">Sample Round</h1>
-      <h2 class="question">A rectangle has length and breadth of 12 cm and 5 cm.
+    <div class="wood-frame">
+      <span class="corner-bottom-left">✦</span>
+      <span class="corner-bottom-right">✦</span>
 
-What is the area of the rectangle?</h2>
+      <div class="parchment">
 
-      <div class="options" id="optionsWrap">
-        <button class="option" data-option="1">A. 60 cm²</button>
-        <button class="option" data-option="2">B. 34 cm²</button>
-        <button class="option" data-option="3">C. 17 cm²</button>
-        <button class="option" data-option="4">D. 120 cm²</button>
+        <div class="shield-wrap">
+          <div class="shield-icon">⚔️</div>
+        </div>
+
+        <p class="eyebrow">Warm-up Challenge</p>
+        <h1 class="title">Sample Round</h1>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-gem">◆</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="question-wrap">
+          <p class="q-label">⚔ Aptitude Question</p>
+          <p class="question-text">A rectangle has length 12 cm and breadth 5 cm.<br>What is the area of the rectangle?</p>
+        </div>
+
+        <div class="options" id="optionsWrap">
+          <button class="option-btn" data-value="60">
+            <span class="opt-letter">A</span>60 cm²
+          </button>
+          <button class="option-btn" data-value="34">
+            <span class="opt-letter">B</span>34 cm²
+          </button>
+          <button class="option-btn" data-value="17">
+            <span class="opt-letter">C</span>17 cm²
+          </button>
+          <button class="option-btn" data-value="120">
+            <span class="opt-letter">D</span>120 cm²
+          </button>
+        </div>
+
+        <p class="result-msg" id="resultMsg"></p>
+
+        <button class="submit-btn" id="submitBtn">⚔ Submit Answer</button>
+
+        <p class="redirect-notice" id="redirectNotice">Entering the Arena…</p>
+
+        <div class="progress-wrap">
+          <div class="pip active"></div>
+          <div class="pip"></div>
+          <div class="pip"></div>
+        </div>
+
       </div>
-
-      <button class="submit-btn" id="submitBtn">Submit Answer</button>
-      <p class="result" id="resultText"></p>
-    </section>
+    </div>
   </main>
 
   <script>
-    const options = document.querySelectorAll(".option");
-    const submitBtn = document.getElementById("submitBtn");
-    const resultText = document.getElementById("resultText");
-    let selectedOption = null;
+    /* ── Stars ── */
+    const starsEl = document.getElementById("stars");
+    for (let i = 0; i < 100; i++) {
+      const s = document.createElement("div");
+      s.className = "star";
+      const size = Math.random() * 2.5 + 0.5;
+      s.style.cssText = `
+        left:${Math.random()*100}%;
+        top:${Math.random()*70}%;
+        width:${size}px;height:${size}px;
+        animation-duration:${2+Math.random()*4}s;
+        animation-delay:${Math.random()*6}s;
+      `;
+      starsEl.appendChild(s);
+    }
 
-    options.forEach((option) => {
-      option.addEventListener("click", () => {
-        options.forEach((item) => item.classList.remove("selected"));
-        option.classList.add("selected");
-        selectedOption = option.dataset.option;
+    /* ── Particles ── */
+    const partEl = document.getElementById("particles");
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.cssText = `
+        left:${Math.random()*100}%;
+        bottom:${Math.random()*40+10}%;
+        animation-duration:${4+Math.random()*6}s;
+        animation-delay:${Math.random()*8}s;
+        width:${Math.random()*4+2}px;
+        height:${Math.random()*4+2}px;
+      `;
+      partEl.appendChild(p);
+    }
+
+    /* ── Game logic ── */
+    const CORRECT_ANSWER = "60";
+    let selectedValue = null;
+    let answered = false;
+
+    const options = document.querySelectorAll(".option-btn");
+    const submitBtn = document.getElementById("submitBtn");
+    const resultMsg = document.getElementById("resultMsg");
+    const redirectNotice = document.getElementById("redirectNotice");
+
+    options.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (answered) return;
+        options.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedValue = btn.dataset.value;
       });
     });
 
     submitBtn.addEventListener("click", () => {
-      if (!selectedOption) {
-        resultText.textContent = "Please select an option first.";
-        resultText.className = "result show wrong";
+      if (answered) return;
+
+      if (!selectedValue) {
+        resultMsg.textContent = "⚠ Please pick an answer first!";
+        resultMsg.className = "result-msg show wrong";
         return;
       }
 
-      const isCorrect = selectedOption === "1";
+      answered = true;
       submitBtn.disabled = true;
+      options.forEach(b => b.disabled = true);
+
+      const isCorrect = selectedValue === CORRECT_ANSWER;
+
+      // Mark correct answer always
+      options.forEach(btn => {
+        if (btn.dataset.value === CORRECT_ANSWER) {
+          btn.classList.remove("selected");
+          btn.classList.add("correct");
+        } else if (btn.dataset.value === selectedValue && !isCorrect) {
+          btn.classList.remove("selected");
+          btn.classList.add("wrong");
+        }
+      });
 
       if (isCorrect) {
-        resultText.textContent = "Correct! 🎉 You start first";
-        resultText.className = "result show correct";
+        resultMsg.textContent = "🎉 Correct! You start first — entering the Arena!";
+        resultMsg.className = "result-msg show correct";
+        launchConfetti();
       } else {
-        resultText.textContent = "Wrong! Other team starts";
-        resultText.className = "result show wrong";
+        resultMsg.textContent = "❌ Wrong! The correct answer is 60 cm². Entering Arena…";
+        resultMsg.className = "result-msg show wrong";
       }
+
+      redirectNotice.classList.add("show");
 
       setTimeout(() => {
         window.location.href = "backup.html";
-      }, 2400);
+      }, 2600);
     });
+
+    function launchConfetti() {
+      const colors = ["#ffd166","#f4a300","#2ecc71","#5bc8dc","#ffffff"];
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti-piece";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty("--dur", (Math.random() * 1.6 + 2) + "s");
+        piece.style.transform = `rotate(${Math.random() * 240}deg)`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 4000);
+      }
+    }
   </script>
 </body>
 </html>
