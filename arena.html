@@ -3,318 +3,850 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <title>Aptitude Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ocean-deep: #041e42;
-      --foam: #e0f7ff;
+      --wood-dark: #3b1f0a;
+      --wood-mid: #6b3a1f;
       --gold: #f4a300;
-      --gold-light: #ffd166;
-      --card-glass: rgba(255,255,255,0.08);
-      --card-border: rgba(178,235,242,0.24);
+      --gold-bright: #ffd166;
+      --gold-dark: #c47d00;
+      --parchment: #fdf3dc;
+      --ink: #2a1505;
+      --sky-top: #1a3a6b;
+      --sky-mid: #2d6a9f;
+      --foam: #e0f7ff;
+      --danger: #c0392b;
+      --ok: #2ecc71;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       min-height: 100vh;
+      font-family: "Nunito", sans-serif;
       overflow-x: hidden;
-      font-family: "Outfit", sans-serif;
-      background: var(--ocean-deep);
+      position: relative;
       color: var(--foam);
     }
-    .bg-mesh {
-      position: fixed; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(27,108,168,0.55), transparent),
-        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(10,61,98,0.8), transparent),
-        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4,30,66,1), transparent);
-      animation: meshShift 14s ease-in-out infinite alternate;
+
+    /* ── Sky background ── */
+    .sky {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #0d1f45 0%, #1a3a6b 35%, #2d6a9f 65%, #5bafd6 85%, #87ceeb 100%);
+      z-index: 0;
     }
-    .bg-grid {
-      position: fixed; inset: 0; z-index: 0;
-      background-image:
-        linear-gradient(rgba(178,235,242,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(178,235,242,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
+
+    /* ── Stars ── */
+    .stars {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
     }
-    .bg-glow {
-      position: fixed; top: -120px; left: 50%; transform: translateX(-50%);
-      width: 700px; height: 400px;
-      background: radial-gradient(ellipse, rgba(244,163,0,0.18), transparent 70%);
-      z-index: 0; pointer-events: none;
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      animation: twinkle linear infinite;
     }
-    .container {
-      position: relative; z-index: 1;
-      min-height: 100vh; display: grid; place-items: center;
-      padding: 22px;
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.4); }
     }
-    .card {
-      width: min(850px, 100%);
-      background: var(--card-glass);
-      border: 1px solid var(--card-border);
-      backdrop-filter: blur(16px);
-      border-radius: 24px;
-      padding: clamp(20px, 4vw, 30px);
-      box-shadow: 0 20px 52px rgba(0,0,0,0.38);
+
+    /* ── Floating particles ── */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--gold-bright);
+      animation: floatUp linear infinite;
+      opacity: 0;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      20% { opacity: 0.8; }
+      80% { opacity: 0.4; }
+      100% { transform: translateY(-120px) scale(0.3); opacity: 0; }
+    }
+
+    /* ── Ground / Hills ── */
+    .ground-wrap {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* ── Glowing moon ── */
+    .moon {
+      position: fixed;
+      top: 6%;
+      right: 12%;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fffde8, #f4d96a 60%, #d4a820);
+      box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.15);
+      z-index: 4;
+      animation: moonGlow 4s ease-in-out infinite alternate;
+    }
+    @keyframes moonGlow {
+      0% { box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.12); }
+      100% { box-shadow: 0 0 45px 15px rgba(255,220,80,0.6), 0 0 110px 40px rgba(255,200,50,0.22); }
+    }
+
+    /* ── Fireflies ── */
+    .firefly {
+      position: fixed;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #b8ff80;
+      box-shadow: 0 0 6px 3px rgba(184,255,128,0.7);
+      z-index: 5;
+      animation: fireflyFloat linear infinite;
+      pointer-events: none;
+    }
+    @keyframes fireflyFloat {
+      0% { transform: translate(0,0) scale(1); opacity: 0; }
+      15% { opacity: 1; }
+      50% { transform: translate(var(--dx), var(--dy)) scale(0.8); opacity: 0.8; }
+      85% { opacity: 1; }
+      100% { transform: translate(0,0) scale(1); opacity: 0; }
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 20px 120px;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      width: 100%;
+      max-width: 1200px;
       text-align: center;
+      padding: 32px 0 20px;
+      animation: headerIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
     }
-    .top-actions {
-      display: flex; justify-content: flex-end; margin-bottom: 8px;
+    @keyframes headerIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
-    .admin-btn {
-      border: 1px solid rgba(178,235,242,0.35);
-      border-radius: 10px;
-      background: rgba(7,30,54,0.85);
-      color: var(--foam);
-      padding: 8px 14px;
-      font-size: 13px;
+
+    .eyebrow {
+      font-family: "Nunito", sans-serif;
+      font-size: 12px;
       font-weight: 700;
-      cursor: pointer;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .title {
+
+    .main-title {
       font-family: "Bebas Neue", sans-serif;
-      font-size: clamp(48px, 8vw, 84px);
-      letter-spacing: 4px;
-      background: linear-gradient(160deg, #ffffff 0%, #b2ebf2 45%, #5bc8dc 100%);
+      font-size: clamp(52px, 10vw, 110px);
+      letter-spacing: 6px;
+      line-height: 0.92;
+      background: linear-gradient(160deg, #ffffff 0%, #b2ebf2 40%, #5bc8dc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 28px rgba(91,200,220,0.4));
     }
-    .subtitle {
-      margin-top: 2px;
-      letter-spacing: 2px;
-      color: rgba(224,247,255,0.72);
-      text-transform: uppercase;
+
+    .tagline {
+      margin-top: 10px;
+      font-family: "Nunito", sans-serif;
       font-size: 13px;
-    }
-    .stage { display: none; margin-top: 18px; }
-    .stage.active { display: block; }
-    .btn-main {
-      border: none;
-      border-radius: 12px;
-      padding: 14px 22px;
-      font-family: "Bebas Neue", sans-serif;
-      font-size: 28px;
+      font-weight: 600;
       letter-spacing: 3px;
-      color: #041e42;
-      cursor: pointer;
-      background: linear-gradient(135deg, var(--gold-light), var(--gold));
-      box-shadow: 0 10px 34px rgba(244,163,0,0.35);
+      text-transform: uppercase;
+      color: rgba(224,247,255,0.65);
     }
-    .team-counts {
-      margin-top: 12px;
+
+    /* ── BATTLE CATEGORIES ── */
+    .categories-section {
+      width: 100%;
+      max-width: 900px;
+      margin: 10px 0 26px;
+      text-align: center;
+      animation: fadeUp 0.6s 0.15s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .cat-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: rgba(224,247,255,0.55);
+      margin-bottom: 12px;
+    }
+
+    .cat-chips {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
-      flex-wrap: wrap;
     }
-    .count-btn {
-      min-width: 64px;
-      padding: 10px 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(178,235,242,0.3);
+
+    .chip {
+      padding: 8px 18px;
+      border-radius: 100px;
+      border: 1.5px solid rgba(178,235,242,0.35);
+      background: rgba(255,255,255,0.07);
+      color: var(--foam);
+      font-family: "Nunito", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+    .chip:hover {
+      border-color: var(--gold-bright);
+      background: rgba(244,163,0,0.15);
+      color: var(--gold-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(244,163,0,0.2);
+    }
+
+    /* ── SET TEAM COUNT BUTTON ── */
+    .set-count-wrap {
+      margin: 0 0 18px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .set-count-btn {
+      padding: 14px 38px;
+      border: 2px solid rgba(178,235,242,0.45);
+      border-radius: 14px;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 22px;
+      letter-spacing: 3px;
+      color: var(--foam);
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .set-count-btn:hover {
+      background: rgba(255,255,255,0.18);
+      border-color: var(--gold-bright);
+      color: var(--gold-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(244,163,0,0.25);
+    }
+
+    /* ── TEAM COUNT PICKER ── */
+    .count-picker {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .count-picker.visible { display: flex; }
+
+    .count-label {
+      font-family: "Cinzel", serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+    }
+
+    .count-options {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .count-opt {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(178,235,242,0.4);
       background: rgba(255,255,255,0.08);
       color: var(--foam);
-      font-size: 18px;
-      font-weight: 700;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 26px;
       cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
     }
-    .count-btn.active {
-      border-color: rgba(255,209,102,0.75);
-      background: rgba(244,163,0,0.2);
+    .count-opt:hover, .count-opt.selected {
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+      border-color: var(--gold-dark);
+      color: var(--ink);
+      transform: scale(1.12);
+      box-shadow: 0 6px 20px rgba(244,163,0,0.4);
     }
+
+    /* ── ENTER ARENA BUTTON ── */
+    .enter-wrap {
+      margin: 0 0 28px;
+      animation: fadeUp 0.6s 0.25s ease both;
+    }
+
+    .enter-btn {
+      position: relative;
+      padding: 18px 52px;
+      border: none;
+      border-radius: 16px;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 28px;
+      letter-spacing: 4px;
+      color: var(--ink);
+      cursor: pointer;
+      background: linear-gradient(135deg, #ffe08a 0%, var(--gold-bright) 38%, var(--gold) 100%);
+      box-shadow:
+        0 0 0 3px var(--gold-dark),
+        0 12px 36px rgba(244,163,0,0.45),
+        0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.18s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      animation: pulseCTA 3s ease-in-out infinite;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .enter-btn::before {
+      content: "▶";
+      font-size: 22px;
+    }
+    .enter-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      filter: brightness(1.06);
+      box-shadow:
+        0 0 0 3px var(--gold-dark),
+        0 18px 46px rgba(244,163,0,0.55),
+        0 6px 18px rgba(0,0,0,0.35);
+    }
+    .enter-btn:active { transform: scale(0.97); }
+    @keyframes pulseCTA {
+      0%, 100% { box-shadow: 0 0 0 3px var(--gold-dark), 0 12px 36px rgba(244,163,0,0.45), 0 4px 12px rgba(0,0,0,0.3); }
+      50% { box-shadow: 0 0 0 3px var(--gold-dark), 0 12px 48px rgba(244,163,0,0.65), 0 4px 12px rgba(0,0,0,0.3); }
+    }
+
+    /* ── TEAM SETUP SECTION ── */
+    .teams-section {
+      width: 100%;
+      max-width: 1100px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      animation: revealTeams 0.65s cubic-bezier(0.34,1.2,0.64,1) both;
+    }
+    .teams-section.visible { display: flex; }
+    @keyframes revealTeams {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .teams-heading {
+      font-family: "Cinzel Decorative", serif;
+      font-size: clamp(16px, 3vw, 22px);
+      color: var(--gold-bright);
+      letter-spacing: 2px;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(255,209,102,0.4);
+    }
+
     .teams-grid {
-      margin-top: 14px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 12px;
-    }
-    .team-block {
-      border-radius: 12px;
-      border: 1px solid rgba(178,235,242,0.24);
-      background: rgba(255,255,255,0.06);
-      padding: 12px;
-      display: grid;
-      gap: 8px;
-    }
-    .team-block input, .team-block select {
-      border-radius: 8px;
-      border: 1px solid rgba(178,235,242,0.35);
-      background: rgba(4,30,66,0.55);
-      color: var(--foam);
-      padding: 8px 10px;
-      outline: none;
-      font-size: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
       width: 100%;
     }
-    .msg { min-height: 18px; margin-top: 10px; font-size: 13px; color: #ff9d9d; }
-    @keyframes meshShift {
-      0% { filter: hue-rotate(0deg) brightness(1); }
-      100% { filter: hue-rotate(15deg) brightness(1.1); }
+
+    /* ── Wooden frame team setup card ── */
+    .team-setup-card {
+      position: relative;
+      padding: 10px;
+      border-radius: 20px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow:
+        0 0 0 2px var(--gold-dark),
+        0 0 0 4px #5a3800,
+        0 18px 45px rgba(0,0,0,0.55),
+        0 0 30px rgba(244,163,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      animation: cardPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes cardPop {
+      from { opacity: 0; transform: translateY(20px) scale(0.92); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .card-corner {
+      position: absolute;
+      color: var(--gold);
+      font-size: 16px;
+      line-height: 1;
+      filter: drop-shadow(0 0 5px rgba(244,163,0,0.6));
+      pointer-events: none;
+    }
+    .card-corner.tl { top: 5px; left: 8px; }
+    .card-corner.tr { top: 5px; right: 8px; }
+    .card-corner.bl { bottom: 5px; left: 8px; }
+    .card-corner.br { bottom: 5px; right: 8px; }
+
+    .card-parchment {
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse at 30% 20%, #fff8e8, transparent 50%),
+        linear-gradient(170deg, #fdf3dc 0%, #f5dfa0 60%, #e8c870 100%);
+      padding: 20px 18px 18px;
+      box-shadow: inset 0 0 28px rgba(139,90,20,0.15), inset 0 2px 0 rgba(255,255,255,0.55);
+      border: 1px solid rgba(180,120,20,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    .team-num-label {
+      font-family: "Cinzel", serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--wood-mid);
+      opacity: 0.75;
+    }
+
+    /* Avatar picker */
+    .avatar-picker-label {
+      font-family: "Cinzel", serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--wood-dark);
+      margin-bottom: 4px;
+    }
+
+    .avatar-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      max-width: 220px;
+    }
+
+    .avatar-opt {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid rgba(139,90,20,0.25);
+      background: rgba(255,255,255,0.4);
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .avatar-opt:hover { transform: scale(1.15); border-color: var(--gold); }
+    .avatar-opt.chosen {
+      border-color: var(--gold-dark);
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+      box-shadow: 0 0 10px rgba(244,163,0,0.5);
+      transform: scale(1.18);
+    }
+
+    .selected-avatar-display {
+      font-size: 46px;
+      line-height: 1;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.3));
+      animation: flagWave 2.5s ease-in-out infinite;
+      min-height: 52px;
+    }
+    @keyframes flagWave {
+      0%, 100% { transform: rotate(-4deg); }
+      50% { transform: rotate(4deg); }
+    }
+
+    /* Team name input */
+    .team-name-input {
+      width: 100%;
+      border: 2px solid rgba(139,90,20,0.3);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.55);
+      color: var(--ink);
+      padding: 10px 14px;
+      font-family: "Cinzel Decorative", serif;
+      font-size: 14px;
+      font-weight: 700;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .team-name-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(244,163,0,0.2);
+    }
+    .team-name-input::placeholder { color: rgba(42,21,5,0.4); font-weight: 400; }
+    .team-name-input.error { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(192,57,43,0.2); }
+
+    /* Avatar error hint */
+    .avatar-error {
+      font-family: "Nunito", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--danger);
+      min-height: 14px;
+    }
+
+    /* ── ADMIN DASHBOARD BUTTON (fixed corner) ── */
+    .admin-corner-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: 1.5px solid rgba(178,235,242,0.3);
+      background: rgba(13,31,69,0.75);
+      backdrop-filter: blur(12px);
+      color: rgba(224,247,255,0.8);
+      font-family: "Nunito", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    }
+    .admin-corner-btn:hover {
+      background: rgba(244,163,0,0.18);
+      border-color: var(--gold-bright);
+      color: var(--gold-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(244,163,0,0.2);
+    }
+    .admin-corner-btn .shield { font-size: 15px; }
+
+    @media (max-width: 640px) {
+      .main-title { font-size: 52px; letter-spacing: 3px; }
+      .admin-corner-btn { bottom: 16px; right: 16px; font-size: 12px; padding: 9px 16px; }
     }
   </style>
 </head>
 <body>
-  <div class="bg-mesh"></div>
-  <div class="bg-grid"></div>
-  <div class="bg-glow"></div>
 
-  <main class="container">
-    <section class="card">
-      <div class="top-actions">
-        <button class="admin-btn" id="adminBtn">Admin Dashboard</button>
+  <!-- Background layers -->
+  <div class="sky"></div>
+  <div class="stars" id="stars"></div>
+  <div class="particles" id="particles"></div>
+  <div class="moon"></div>
+
+  <!-- Ground -->
+  <div class="ground-wrap">
+    <svg viewBox="0 0 1440 260" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:auto;">
+      <defs>
+        <linearGradient id="hB" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a5c32"/>
+          <stop offset="100%" stop-color="#0c3318"/>
+        </linearGradient>
+        <linearGradient id="hF" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0f4520"/>
+          <stop offset="100%" stop-color="#061a0d"/>
+        </linearGradient>
+        <linearGradient id="hG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a7a45"/>
+          <stop offset="100%" stop-color="#1a5c32"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#hB)" d="M0,200 C100,100 250,60 400,120 C550,180 650,50 800,80 C950,110 1100,60 1200,100 C1300,140 1380,100 1440,120 L1440,260 L0,260 Z"/>
+      <path fill="url(#hG)" d="M0,220 C80,160 200,120 320,150 C440,180 540,100 680,130 C820,160 940,110 1100,140 C1260,170 1380,130 1440,150 L1440,260 L0,260 Z"/>
+      <path fill="url(#hF)" d="M0,245 C120,210 280,195 440,215 C600,235 740,200 880,215 C1020,230 1180,205 1340,220 L1440,240 L1440,260 L0,260 Z"/>
+      <rect fill="#082010" x="60" y="168" width="8" height="30" rx="2"/>
+      <ellipse fill="#0f4520" cx="64" cy="162" rx="16" ry="20"/>
+      <ellipse fill="#1a6030" cx="64" cy="155" rx="10" ry="14"/>
+      <rect fill="#082010" x="1320" y="152" width="8" height="30" rx="2"/>
+      <ellipse fill="#0f4520" cx="1324" cy="146" rx="18" ry="22"/>
+      <ellipse fill="#1a6030" cx="1324" cy="138" rx="11" ry="15"/>
+    </svg>
+  </div>
+
+  <!-- Page content -->
+  <div class="page-wrap">
+
+    <!-- ── HEADER ── -->
+    <header class="site-header">
+      <p class="eyebrow"><span>⚡</span> Battle of Wits</p>
+      <h1 class="main-title">Aptitude Arena</h1>
+      <p class="tagline">Choose Your Team &nbsp;·&nbsp; Enter the Arena</p>
+    </header>
+
+    <!-- ── BATTLE CATEGORIES ── -->
+    <section class="categories-section">
+      <p class="cat-label">⚔ Battle Categories</p>
+      <div class="cat-chips">
+        <span class="chip">Simplification</span>
+        <span class="chip">HCF &amp; LCM</span>
+        <span class="chip">Numbers</span>
+        <span class="chip">Coding-Decoding</span>
+        <span class="chip">Odd One Out</span>
+        <span class="chip">Synonym-Antonym</span>
+        <span class="chip">Series</span>
+        <span class="chip">Logical Puzzle</span>
       </div>
-      <h1 class="title">Aptitude Arena</h1>
-      <p class="subtitle">Enter • Setup • Battle</p>
-
-      <section class="stage active" id="entryStage">
-        <button class="btn-main" id="enterBtn">Enter Arena</button>
-      </section>
-
-      <section class="stage" id="countStage">
-        <p>Select number of teams</p>
-        <div class="team-counts" id="countButtons">
-          <button class="count-btn" data-count="2">2</button>
-          <button class="count-btn" data-count="3">3</button>
-          <button class="count-btn" data-count="4">4</button>
-          <button class="count-btn" data-count="5">5</button>
-        </div>
-      </section>
-
-      <section class="stage" id="detailsStage">
-        <p>Enter team names and avatars</p>
-        <div class="teams-grid" id="teamsGrid"></div>
-        <button class="btn-main" id="finalEnterBtn" style="margin-top:14px;">Enter Arena</button>
-        <p class="msg" id="detailMsg"></p>
-      </section>
     </section>
-  </main>
+
+    <!-- ── SET TEAM COUNT BUTTON ── -->
+    <div class="set-count-wrap">
+      <button class="set-count-btn" id="setCountBtn" onclick="toggleCountPicker()">
+        ⚔ Set Team Count
+      </button>
+    </div>
+
+    <!-- ── TEAM COUNT PICKER ── -->
+    <div class="count-picker" id="countPicker">
+      <p class="count-label">How many teams will battle?</p>
+      <div class="count-options">
+        <div class="count-opt" onclick="selectCount(2)">2</div>
+        <div class="count-opt" onclick="selectCount(3)">3</div>
+        <div class="count-opt" onclick="selectCount(4)">4</div>
+        <div class="count-opt" onclick="selectCount(5)">5</div>
+      </div>
+    </div>
+
+    <!-- ── TEAM SETUP CARDS ── -->
+    <section class="teams-section" id="teamsSection">
+      <h2 class="teams-heading">⚔ Choose Your Warriors ⚔</h2>
+      <div class="teams-grid" id="teamsGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ── ENTER ARENA BUTTON ── -->
+    <div class="enter-wrap" id="enterWrap" style="display:none; margin-top:10px;">
+      <button class="enter-btn" id="enterArenaBtn" onclick="enterArena()">Enter the Arena</button>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+  <!-- ── ADMIN DASHBOARD CORNER BUTTON ── -->
+  <button class="admin-corner-btn" onclick="window.location.href='admin.html'">
+    <span class="shield">🛡️</span> Admin Dashboard
+  </button>
 
   <script>
-    const avatars = ["🦁", "🐯", "🐼", "🦊", "🐸", "🐵", "🐙", "🐺", "🦅"];
-    const entryStage = document.getElementById("entryStage");
-    const countStage = document.getElementById("countStage");
-    const detailsStage = document.getElementById("detailsStage");
-    const teamsGrid = document.getElementById("teamsGrid");
-    const detailMsg = document.getElementById("detailMsg");
-
-    localStorage.removeItem("teams");
-    localStorage.removeItem("teamCount");
-    localStorage.removeItem("finalTeams");
-    localStorage.removeItem("scores");
-
-    function setStage(id) {
-      [entryStage, countStage, detailsStage].forEach((s) => s.classList.remove("active"));
-      id.classList.add("active");
+    /* ── Stars ── */
+    const starsEl = document.getElementById("stars");
+    for (let i = 0; i < 100; i++) {
+      const s = document.createElement("div");
+      s.className = "star";
+      const size = Math.random() * 2.5 + 0.5;
+      s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*70}%;width:${size}px;height:${size}px;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*6}s;`;
+      starsEl.appendChild(s);
     }
 
-    document.getElementById("enterBtn").addEventListener("click", () => setStage(countStage));
+    /* ── Particles ── */
+    const partEl = document.getElementById("particles");
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.cssText = `left:${Math.random()*100}%;bottom:${Math.random()*40+10}%;animation-duration:${4+Math.random()*6}s;animation-delay:${Math.random()*8}s;width:${Math.random()*4+2}px;height:${Math.random()*4+2}px;`;
+      partEl.appendChild(p);
+    }
 
-    document.getElementById("countButtons").addEventListener("click", (e) => {
-      const btn = e.target.closest(".count-btn");
-      if (!btn) return;
-      const teamCount = Number(btn.dataset.count);
-      localStorage.setItem("teamCount", String(teamCount));
-      document.querySelectorAll(".count-btn").forEach((b) => b.classList.toggle("active", b === btn));
-      renderTeamInputs(teamCount);
-      setStage(detailsStage);
-    });
+    /* ── Fireflies ── */
+    for (let i = 0; i < 14; i++) {
+      const f = document.createElement("div");
+      f.className = "firefly";
+      f.style.cssText = `left:${Math.random()*90+5}%;top:${Math.random()*60+20}%;animation-duration:${6+Math.random()*8}s;animation-delay:${Math.random()*10}s;--dx:${(Math.random()-0.5)*120}px;--dy:${(Math.random()-0.5)*80}px;`;
+      document.body.appendChild(f);
+    }
 
-    function renderTeamInputs(teamCount) {
-      teamsGrid.innerHTML = "";
-      for (let i = 1; i <= teamCount; i++) {
-        const div = document.createElement("div");
-        div.className = "team-block";
-        div.innerHTML = `
-          <label>Team ${i} Name</label>
-          <input type="text" placeholder="Team ${i}" data-name="${i}">
-          <label>Avatar</label>
-          <select data-avatar="${i}">
-            ${avatars.map((a, idx) => `<option value="${a}" ${idx === (i - 1) % avatars.length ? "selected" : ""}>${a}</option>`).join("")}
-          </select>
-        `;
-        teamsGrid.appendChild(div);
+    /* ── Avatars pool ── */
+    const AVATARS = ["🐻","🦊","🐺","🐸","🦝","🐵","🦁","🐯","🐼","🐨","🦄","🐉","🦅","🐬","🦋","🐙","🦖","🦊","🐮","🦩"];
+
+    let selectedCount = 0;
+    let countPickerOpen = false;
+
+    function toggleCountPicker() {
+      countPickerOpen = !countPickerOpen;
+      const picker = document.getElementById("countPicker");
+      if (countPickerOpen) {
+        picker.classList.add("visible");
+      } else {
+        picker.classList.remove("visible");
       }
     }
 
-    document.getElementById("finalEnterBtn").addEventListener("click", async () => {
-      const teamCount = Number(localStorage.getItem("teamCount") || 0);
-      if (!teamCount) {
-        detailMsg.textContent = "Please select team count first.";
+    function selectCount(n) {
+      selectedCount = n;
+
+      // Highlight selected option
+      document.querySelectorAll(".count-opt").forEach(el => {
+        el.classList.toggle("selected", parseInt(el.textContent) === n);
+      });
+
+      // Hide picker
+      countPickerOpen = false;
+      document.getElementById("countPicker").classList.remove("visible");
+
+      // Render team cards
+      renderTeamSetupCards(n);
+
+      // Show teams section + enter button
+      const section = document.getElementById("teamsSection");
+      section.classList.add("visible");
+      document.getElementById("enterWrap").style.display = "flex";
+      document.getElementById("enterWrap").style.justifyContent = "center";
+
+      setTimeout(() => section.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    }
+
+    function renderTeamSetupCards(count) {
+      const grid = document.getElementById("teamsGrid");
+      grid.innerHTML = "";
+
+      for (let i = 0; i < count; i++) {
+        const idx = i;
+        const card = document.createElement("div");
+        card.className = "team-setup-card";
+        card.style.animationDelay = (idx * 0.08) + "s";
+
+        const avatarOptsHTML = AVATARS.map((em, ai) =>
+          `<div class="avatar-opt" data-team="${idx}" data-avatar="${em}" onclick="pickAvatar(${idx},'${em}',this)">${em}</div>`
+        ).join("");
+
+        card.innerHTML = `
+          <span class="card-corner tl">✦</span>
+          <span class="card-corner tr">✦</span>
+          <span class="card-corner bl">✦</span>
+          <span class="card-corner br">✦</span>
+          <div class="card-parchment">
+            <p class="team-num-label">Team ${idx + 1}</p>
+
+            <div id="avatarDisplay_${idx}" class="selected-avatar-display">🚩</div>
+            <p class="avatar-error" id="avatarErr_${idx}"></p>
+
+            <div>
+              <p class="avatar-picker-label">Pick Avatar</p>
+              <div class="avatar-grid" id="avatarGrid_${idx}">
+                ${avatarOptsHTML}
+              </div>
+            </div>
+
+            <input
+              class="team-name-input"
+              id="teamName_${idx}"
+              type="text"
+              placeholder="Enter team name…"
+              maxlength="24"
+            />
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    function pickAvatar(teamIdx, emoji, el) {
+      // Update display
+      document.getElementById(`avatarDisplay_${teamIdx}`).textContent = emoji;
+      // Clear error
+      document.getElementById(`avatarErr_${teamIdx}`).textContent = "";
+      // Highlight selection
+      document.querySelectorAll(`.avatar-opt[data-team="${teamIdx}"]`).forEach(opt => opt.classList.remove("chosen"));
+      el.classList.add("chosen");
+    }
+
+    /* ── Enter Arena — validate then redirect ── */
+    function enterArena() {
+      let valid = true;
+
+      for (let i = 0; i < selectedCount; i++) {
+        const nameInput = document.getElementById(`teamName_${i}`);
+        const avatarDisplay = document.getElementById(`avatarDisplay_${i}`);
+        const avatarErr = document.getElementById(`avatarErr_${i}`);
+        const nameVal = nameInput.value.trim();
+        const avatarVal = avatarDisplay.textContent.trim();
+
+        // Reset styles
+        nameInput.classList.remove("error");
+        avatarErr.textContent = "";
+
+        if (!nameVal) {
+          nameInput.classList.add("error");
+          nameInput.placeholder = "⚠ Team name required!";
+          valid = false;
+        }
+
+        if (avatarVal === "🚩") {
+          avatarErr.textContent = "⚠ Please pick an avatar";
+          valid = false;
+        }
+      }
+
+      if (!valid) {
+        // Scroll to first error
+        const firstErr = document.querySelector(".team-name-input.error") || document.querySelector(".avatar-error:not(:empty)");
+        if (firstErr) firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
 
+      // Save teams to localStorage for the game page
       const teams = [];
-      for (let i = 1; i <= teamCount; i++) {
-        const name = (document.querySelector(`[data-name="${i}"]`)?.value || "").trim();
-        const avatar = (document.querySelector(`[data-avatar="${i}"]`)?.value || "🚩").trim();
-        if (!name) {
-          detailMsg.textContent = `Please enter Team ${i} name.`;
-          return;
-        }
-        teams.push({ id: `T${i}`, name, avatar, score: 0 });
+      for (let i = 0; i < selectedCount; i++) {
+        teams.push({
+          id: `T${i+1}`,
+          name: document.getElementById(`teamName_${i}`).value.trim(),
+          avatar: document.getElementById(`avatarDisplay_${i}`).textContent.trim(),
+          score: 0
+        });
       }
-
       localStorage.setItem("teams", JSON.stringify(teams));
 
-      // Compatibility with existing session API (first 3 teams only).
-      const fallback = [
-        { name: "Team A", avatar: "🦁" },
-        { name: "Team B", avatar: "🐯" },
-        { name: "Team C", avatar: "🐼" }
-      ];
-      const merged = [teams[0] || fallback[0], teams[1] || fallback[1], teams[2] || fallback[2]];
-      sessionStorage.setItem("teamA", merged[0].name);
-      sessionStorage.setItem("teamB", merged[1].name);
-      sessionStorage.setItem("teamC", merged[2].name);
-      sessionStorage.setItem("avatarA", merged[0].avatar);
-      sessionStorage.setItem("avatarB", merged[1].avatar);
-      sessionStorage.setItem("avatarC", merged[2].avatar);
-
-      try {
-        const response = await fetch("/api/sessions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            teamA: merged[0].name,
-            teamB: merged[1].name,
-            teamC: merged[2].name,
-            avatarA: merged[0].avatar,
-            avatarB: merged[1].avatar,
-            avatarC: merged[2].avatar
-          })
-        });
-        if (response.ok) {
-          const data = await response.json();
-          sessionStorage.setItem("gameSessionId", String(data.sessionId));
-        }
-      } catch (_e) {}
-
+      // Redirect to game page
       window.location.href = "backup.html";
-    });
-
-    document.getElementById("adminBtn").addEventListener("click", async () => {
-      const username = prompt("Admin username:");
-      if (!username) return;
-      const password = prompt("Admin password:");
-      if (password === null) return;
-
-      try {
-        const res = await fetch("/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          alert(data.message || "Login failed");
-          return;
-        }
-        localStorage.setItem("adminUser", username.trim().toLowerCase());
-        window.location.href = "admin.html";
-      } catch (_e) {
-        alert("Could not validate admin login.");
-      }
-    });
+    }
   </script>
 </body>
 </html>
