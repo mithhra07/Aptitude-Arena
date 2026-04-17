@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aptitude Arena Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ocean-deep: #041e42;
+      --ocean-mid: #0a3d62;
+      --ocean-bright: #1b6ca8;
+      --foam: #e0f7ff;
+      --gold: #f4a300;
+      --gold-light: #ffd166;
+      --card-glass: rgba(255,255,255,0.07);
+      --card-border: rgba(178,235,242,0.2);
+      --card: rgba(255,255,255,0.08);
+      --border: rgba(178,235,242,0.24);
+      --danger: #c0392b;
+      --ok: #2ecc71;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: 'Outfit', sans-serif;
+      background: var(--ocean-deep);
+      position: relative;
+    }
+
+    /* ── Animated mesh background ── */
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(27,108,168,0.55), transparent),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(10,61,98,0.8), transparent),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4,30,66,1), transparent);
+      animation: meshShift 14s ease-in-out infinite alternate;
+    }
+    @keyframes meshShift {
+      0%   { filter: hue-rotate(0deg) brightness(1); }
+      100% { filter: hue-rotate(15deg) brightness(1.1); }
+    }
+
+    /* Subtle grid overlay */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(178,235,242,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(178,235,242,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Gold glow at top */
+    .bg-glow {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(244,163,0,0.18), transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.18;
+      z-index: 0;
+      animation: orbFloat linear infinite;
+      pointer-events: none;
+    }
+    .orb-1 { width:300px; height:300px; background:#1b6ca8; top:10%; left:5%;  animation-duration:20s; }
+    .orb-2 { width:200px; height:200px; background:#f4a300; bottom:15%; right:8%; animation-duration:27s; animation-direction:reverse; }
+    .orb-3 { width:160px; height:160px; background:#0a3d62; top:60%; left:40%; animation-duration:18s; }
+    @keyframes orbFloat {
+      0%   { transform: translate(0,0) scale(1); }
+      33%  { transform: translate(30px,-40px) scale(1.1); }
+      66%  { transform: translate(-20px,25px) scale(0.95); }
+      100% { transform: translate(0,0) scale(1); }
+    }
+
+    /* ── Layout ── */
+    .container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .panel {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+      padding: 22px;
+      position: relative;
+      z-index: 15;
+    }
+
+    .title {
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 3px;
+      font-size: 48px;
+      text-align: center;
+      color: var(--foam);
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(224,247,255,0.72);
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .hidden { display: none; }
+
+    .login-box {
+      max-width: 420px;
+      margin: 30px auto 10px;
+      padding: 22px;
+      background: rgba(7,30,54,0.75);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .field { margin-bottom: 14px; }
+    .label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      color: rgba(224,247,255,0.88);
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.08);
+      color: var(--foam);
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: rgba(178,235,242,0.7);
+      box-shadow: 0 0 14px rgba(91,200,220,0.2);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      cursor: pointer;
+      color: #041e42;
+      background: linear-gradient(135deg, #ffd166, #f4a300);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn.secondary {
+      color: var(--foam);
+      background: rgba(10,61,98,0.85);
+      border: 1px solid rgba(178,235,242,0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+
+    .msg {
+      text-align: center;
+      min-height: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .msg.error { color: #ff7b7b; }
+    .msg.success { color: #7fffb5; }
+
+    /* CARD-BASED DASHBOARD STYLES */
+    
+    .matches-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 1024px) {
+      .matches-container {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 20px;
+      }
+    }
+
+    .match-card {
+      background: rgba(7,30,54,0.72);
+      border: 2px solid rgba(178,235,242,0.22);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .match-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(27,108,168,0.25);
+      border-color: rgba(178,235,242,0.4);
+    }
+
+    .match-header {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .teams-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 1024px) {
+      .teams-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .team-block {
+      background: rgba(10,61,98,0.5);
+      border: 2px solid rgba(178,235,242,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+
+    .team-block:hover {
+      border-color: rgba(178,235,242,0.4);
+      background: rgba(10,61,98,0.7);
+    }
+
+    .team-block.winner {
+      border: 3px solid var(--gold);
+      background: rgba(244,163,0,0.15);
+      box-shadow: 0 0 20px rgba(244,163,0,0.3), inset 0 0 20px rgba(244,163,0,0.1);
+    }
+
+    .team-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: rgba(224,247,255,0.9);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .team-score {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--foam);
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 2px;
+    }
+
+    .winner-badge {
+      background: linear-gradient(135deg, rgba(244,163,0,0.3), rgba(244,163,0,0.15));
+      border: 2px solid var(--gold);
+      border-radius: 10px;
+      padding: 12px 16px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--gold);
+      letter-spacing: 1px;
+      margin-top: 16px;
+    }
+
+    .match-meta {
+      text-align: center;
+      font-size: 11px;
+      color: rgba(224,247,255,0.6);
+      letter-spacing: 0.5px;
+      margin-top: 12px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: rgba(224,247,255,0.72);
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    /* Admin tables */
+    .tables-grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 14px;
+    }
+
+    @media (min-width: 1024px) {
+      .tables-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .table-block {
+      background: rgba(7,30,54,0.55);
+      border: 1px solid rgba(178,235,242,0.18);
+      border-radius: 16px;
+      padding: 16px 16px 12px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+    }
+
+    .table-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .dash-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 520px;
+    }
+
+    .dash-table th,
+    .dash-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(178,235,242,0.14);
+      text-align: left;
+      color: rgba(224,247,255,0.9);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .dash-table th {
+      position: sticky;
+      top: 0;
+      background: rgba(4,30,66,0.85);
+      color: var(--foam);
+      letter-spacing: 0.5px;
+    }
+
+    .dash-table tr:hover td {
+      background: rgba(27,108,168,0.12);
+    }
+  </style>
+</head>
+<body>
+  <!-- Background layers (same as index.html) -->
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Main content -->
+  <div class="container">
+    <div class="panel">
+      <h1 class="title">Admin Dashboard</h1>
+      <p class="subtitle">Aptitude Arena match history and results</p>
+
+    <section id="loginSection" class="login-box">
+      <div class="field">
+        <label class="label" for="username">Username</label>
+        <input id="username" type="text" placeholder="Enter username" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label class="label" for="password">Password</label>
+        <input id="password" type="password" placeholder="Enter password" autocomplete="off">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="loginAdmin()">Login</button>
+        <button class="btn secondary" onclick="goHome()">Back to Home</button>
+      </div>
+
+      <p id="loginMessage" class="msg"></p>
+    </section>
+
+    <section id="dashboardSection" class="hidden">
+      <div class="btn-row">
+        <button class="btn" onclick="refreshAdminData()">Refresh</button>
+        <button class="btn secondary" onclick="logoutAdmin()">Logout</button>
+      </div>
+
+      <div class="tables-grid">
+        <div class="table-block">
+          <div class="table-title">All Users</div>
+          <div class="table-scroll">
+            <table class="dash-table">
+              <thead>
+                <tr><th>Username</th></tr>
+              </thead>
+              <tbody id="usersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-block">
+          <div class="table-title">Game Results</div>
+          <div class="table-scroll">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Score</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty hidden">No game results found yet</div>
+    </section>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_USERNAME = "HAROLD";
+    const ADMIN_PASSWORD = "510711";
+
+    const loginSection = document.getElementById("loginSection");
+    const dashboardSection = document.getElementById("dashboardSection");
+    const loginMessage = document.getElementById("loginMessage");
+    const usersTbody = document.getElementById("usersTbody");
+    const resultsTbody = document.getElementById("resultsTbody");
+    const emptyState = document.getElementById("emptyState");
+
+    function setLoginMessage(text, type) {
+      loginMessage.textContent = text;
+      loginMessage.className = `msg ${type || ""}`.trim();
+    }
+
+    function loginAdmin() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        setLoginMessage("Login successful.", "success");
+        loginSection.classList.add("hidden");
+        dashboardSection.classList.remove("hidden");
+        refreshAdminData();
+      } else {
+        setLoginMessage("Invalid username or password.", "error");
+      }
+    }
+
+    function logoutAdmin() {
+      dashboardSection.classList.add("hidden");
+      loginSection.classList.remove("hidden");
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+      setLoginMessage("");
+      usersTbody.innerHTML = "";
+      resultsTbody.innerHTML = "";
+      emptyState.classList.add("hidden");
+    }
+
+    function goHome() {
+      window.location.href = "index.html";
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "-";
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) return value;
+      return parsed.toLocaleString();
+    }
+
+    function renderUsers(usernames) {
+      usersTbody.innerHTML = "";
+      (usernames || []).forEach((name) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${String(name)}</td>`;
+        usersTbody.appendChild(tr);
+      });
+    }
+
+    function renderResults(results) {
+      resultsTbody.innerHTML = "";
+      const rows = results || [];
+
+      if (!rows.length) {
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.username}</td>
+          <td>${row.score}</td>
+          <td>${formatDateTime(row.date)}</td>
+        `;
+        resultsTbody.appendChild(tr);
+      });
+    }
+
+    async function refreshAdminData() {
+      try {
+        const [usersRes, resultsRes] = await Promise.all([
+          fetch("/admin/users"),
+          fetch("/admin/results")
+        ]);
+
+        if (!usersRes.ok) throw new Error("Failed to fetch users.");
+        if (!resultsRes.ok) throw new Error("Failed to fetch results.");
+
+        const users = await usersRes.json();
+        const results = await resultsRes.json();
+
+        renderUsers(users);
+        renderResults(results);
+      } catch (error) {
+        console.error("Could not load admin data:", error);
+        usersTbody.innerHTML = "";
+        resultsTbody.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        emptyState.textContent = "Could not load admin data.";
+      }
+    }
+
+    // If validated from arena admin prompt, open dashboard directly.
+    if (localStorage.getItem("adminUser")) {
+      loginSection.classList.add("hidden");
+      dashboardSection.classList.remove("hidden");
+      refreshAdminData();
+    }
+  </script>
+</body>
+</html>

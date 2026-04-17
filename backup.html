@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aptitude Arena - Event Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   CSS VARIABLES & RESET
+   ============================================================ */
+:root {
+  --deep:       #030f1c;
+  --mid:        #071e36;
+  --ocean:      #0a3d62;
+  --bright:     #1b6ca8;
+  --foam:       #b2ebf2;
+  --gold:       #f4a300;
+  --gold-lt:    #ffd166;
+  --green-ok:   #2ecc71;
+  --red-badge:  #c0392b;
+  --popup-bg:   #f0f7ff;
+  --text-dark:  #0d1b2a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: 'Outfit', sans-serif;
+  background: var(--deep);
+  color: #e0f7ff;
+}
+
+/* ============================================================
+   LAYERED BACKGROUND
+   ============================================================ */
+
+/* Animated deep-ocean gradient */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(135deg, #020c17 0%, #041e3a 40%, #071e36 70%, #020c17 100%);
+  background-size: 300% 300%;
+  animation: bgShift 18s ease infinite alternate;
+}
+@keyframes bgShift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* Hex grid texture */
+.bg-hex {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(178,235,242,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(178,235,242,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* Gold top glow */
+.bg-glow-top {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 350px;
+  background: radial-gradient(ellipse, rgba(244,163,0,0.12), transparent 65%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Floating orbs */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(70px);
+  z-index: 0;
+  pointer-events: none;
+  animation: orbDrift linear infinite;
+}
+.orb-1 { width:350px; height:350px; background:rgba(27,108,168,0.22); top:5%;  left:2%;  animation-duration:22s; }
+.orb-2 { width:250px; height:250px; background:rgba(244,163,0,0.10);  bottom:8%; right:4%; animation-duration:30s; animation-direction:reverse; }
+.orb-3 { width:180px; height:180px; background:rgba(10,61,98,0.35);   top:55%; left:45%; animation-duration:19s; }
+@keyframes orbDrift {
+  0%   { transform: translate(0,0); }
+  33%  { transform: translate(25px,-35px); }
+  66%  { transform: translate(-18px,22px); }
+  100% { transform: translate(0,0); }
+}
+
+
+/* ============================================================
+   STRUCTURED LAYOUT
+   ============================================================ */
+.game-layout {
+  position: relative;
+  z-index: 5;
+  min-height: 100vh;
+  padding: 16px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.top-bar {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(200px, 1.2fr) minmax(280px, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(7,30,54,0.78);
+  border: 1px solid rgba(178,235,242,0.24);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(178,235,242,0.12);
+}
+
+.topic-display {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(4,30,66,0.46);
+  border: 1px solid rgba(178,235,242,0.14);
+  text-align: center;
+  min-width: 0;
+}
+.topic-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(178,235,242,0.45);
+  font-weight: 700;
+}
+.topic-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gold-lt);
+  margin-top: 3px;
+  letter-spacing: 0.5px;
+}
+
+.timer-ui {
+  padding: 10px 22px 8px;
+  border-radius: 14px;
+  background: rgba(4,30,66,0.5);
+  border: 1px solid rgba(178,235,242,0.16);
+  text-align: center;
+  min-width: 180px;
+}
+.timer-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(178,235,242,0.45);
+  font-weight: 700;
+}
+.timer-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(54px, 5.5vw, 72px);
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-top: 4px;
+  transition: color 0.4s;
+  color: #ffd166;
+  text-shadow: 0 0 20px rgba(255,209,102,0.35), 0 0 36px rgba(255,209,102,0.2);
+}
+.timer-value.urgent {
+  color: #e74c3c;
+  text-shadow: 0 0 22px rgba(231,76,60,0.5);
+  animation: timerPulse 0.6s ease infinite alternate;
+}
+@keyframes timerPulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+.timer-bar-wrap {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.timer-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #2ecc71, #ffd166);
+  transition: width 1s linear, background 0.4s;
+}
+
+
+.scoreboard {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(4,30,66,0.5);
+  border: 1px solid rgba(178,235,242,0.14);
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto;
+}
+.team {
+  position: relative;
+  min-width: 74px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(224,247,255,0.85);
+}
+.avatar {
+  font-size: 34px;
+  line-height: 1;
+  margin-bottom: 3px;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+}
+.team-name {
+  display: block;
+}
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--red-badge);
+  color: #fff;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 3px 10px rgba(192,57,43,0.5);
+  animation: pop 0.3s ease;
+}
+@keyframes pop {
+  0%   { transform: scale(0); }
+  80%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+
+/* ============================================================
+   BOARD GRID
+   ============================================================ */
+.board-container {
+  width: min(1110px, 100%);
+  margin: 0 auto;
+  padding: 16px 18px 20px;
+  border-radius: 22px;
+  background: rgba(7,30,54,0.72);
+  border: 1px solid rgba(178,235,242,0.2);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.36), inset 0 1px 0 rgba(178,235,242,0.1);
+}
+
+.board {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  justify-items: center;
+  align-items: center;
+  gap: 22px;
+}
+
+/* ── Game circles ── */
+.object {
+  width: clamp(52px, 7vw, 74px);
+  height: clamp(52px, 7vw, 74px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.object::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;
+}
+
+.object:hover {
+  transform: scale(1.12) translateY(-4px);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.55), 0 0 26px rgba(178,235,242,0.28);
+}
+
+/* Color classes */
+.c1 { background: linear-gradient(135deg, #e09f3e, #c47e1a); }
+.c2 { background: linear-gradient(135deg, #9e2a2b, #7a1a1b); color:#fff; }
+.c3 { background: linear-gradient(135deg, #335c67, #1e3c44); color:#fff; }
+.c4 { background: linear-gradient(135deg, #f5e97a, #d4c455); }
+
+/* Completed state */
+.completed {
+  background: linear-gradient(135deg, #27ae60, #1e8449) !important;
+  color: #fff !important;
+  cursor: default;
+  box-shadow: 0 4px 14px rgba(39,174,96,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+}
+.completed::after {
+  content: "✔";
+  font-size: 24px;
+  position: absolute;
+}
+
+.no-one {
+  background: linear-gradient(135deg, #c0392b, #96281b) !important;
+  color: #fff !important;
+  cursor: default;
+  box-shadow: 0 4px 14px rgba(192,57,43,0.4), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+}
+.no-one::after {
+  content: "✘";
+  font-size: 24px;
+  position: absolute;
+}
+
+/* Flip animation */
+@keyframes flipIn {
+  0%   { transform: rotateY(0); }
+  50%  { transform: rotateY(90deg); }
+  100% { transform: rotateY(0); }
+}
+.object.flip {
+  animation: flipIn 0.6s ease;
+}
+
+
+/* ============================================================
+   POPUP BASE
+   ============================================================ */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%) scale(0.92);
+  width: 90%;
+  max-width: 660px;
+  min-width: 320px;
+  padding: 32px 38px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: var(--popup-bg);
+  border: 1px solid rgba(178,235,242,0.25);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  display: none;
+  text-align: center;
+  z-index: 1200;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.popup.show {
+  display: block;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Popup header shimmer */
+.popup::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(27,108,168,0.5), transparent);
+}
+
+/* Question title */
+.question-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--bright);
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+/* Question body */
+.question-body {
+  display: block;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text-dark);
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  margin-bottom: 18px;
+  max-height: 38vh;
+  overflow-y: auto;
+}
+.question-body::-webkit-scrollbar { width: 5px; }
+.question-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+
+/* 2×2 options grid */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px;
+  margin-bottom: 20px;
+}
+.option {
+  background: rgba(10,61,98,0.07);
+  border: 1.5px solid rgba(10,61,98,0.12);
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.15s;
+}
+.option:hover {
+  background: rgba(27,108,168,0.12);
+  border-color: rgba(27,108,168,0.35);
+  transform: translateY(-2px);
+}
+
+/* Answer wrap */
+.answer-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 14px 18px;
+  background: #e8f4fd;
+  border: 1.5px solid rgba(27,108,168,0.2);
+  min-width: 260px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ocean);
+}
+.answer-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--red-badge);
+  transform: translateX(0);
+  opacity: 0;
+}
+#answerPopup.reveal .answer-wrap::after {
+  animation: curtainOpen 0.55s ease forwards;
+}
+#answerPopup.reveal #answerText {
+  animation: answerFadeIn 0.55s ease both;
+}
+@keyframes curtainOpen {
+  0%   { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(102%); opacity: 1; }
+}
+@keyframes answerFadeIn {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  margin: 6px;
+  padding: 13px 22px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  min-width: 120px;
+  background: linear-gradient(135deg, #335c67, #1e3c44);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+  filter: brightness(1.1);
+}
+.btn:active {
+  transform: scale(0.96);
+}
+
+/* Team scoring buttons */
+.team-buttons {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(150px, 1fr));
+  gap: 10px 14px;
+  justify-content: center;
+}
+.team-buttons .btn { margin: 0; }
+
+/* "Which team?" popup label */
+#teamPopup > div:first-child {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--ocean);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+@keyframes confettiBurst {
+  0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+.confetti-piece {
+  position: fixed;
+  width: 8px;
+  height: 12px;
+  pointer-events: none;
+  z-index: 1600;
+  border-radius: 2px;
+  animation: confettiBurst var(--dur) ease-out forwards;
+}
+
+/* ============================================================
+   WRONG ANSWER FEEDBACK
+   ============================================================ */
+.option.wrong {
+  background: rgba(192,57,43,0.15) !important;
+  border-color: rgba(192,57,43,0.6) !important;
+  color: #c0392b !important;
+  animation: shakeWrong 0.4s ease;
+}
+@keyframes shakeWrong {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+/* Error toast */
+.error-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: linear-gradient(135deg, #c0392b, #96281b);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 10px 30px rgba(192,57,43,0.45);
+  z-index: 1700;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.error-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* End game container */
+.end-game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+/* End game button */
+.end-game-btn {
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(135deg, #ffd166 0%, #f4a300 100%);
+  color: #041e42;
+  border: 1px solid rgba(255,209,102,0.5);
+  border-radius: 12px;
+  padding: 11px 26px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(244,163,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+  min-width: 140px;
+  text-align: center;
+}
+.end-game-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 32px rgba(244,163,0,0.48), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.end-game-btn:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+@media (max-width: 980px) {
+  .top-bar {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .scoreboard {
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   SUMMARY / TIE-BREAKER POPUP text
+   ============================================================ */
+#summaryText, #tieBreakerText {
+  font-size: 18px;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="bg-layer"></div>
+<div class="bg-hex"></div>
+<div class="bg-glow-top"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<main class="game-layout">
+  <div class="top-bar">
+    <div class="topic-display" id="topicDisplay">
+      <div class="topic-label">Current Topic</div>
+      <div class="topic-name">—</div>
+    </div>
+
+    <div class="timer-ui" id="timerUi">
+      <div class="timer-label">Time Left</div>
+      <div class="timer-value" id="timerValue">30</div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
+    </div>
+
+    <div class="scoreboard revealed" id="scoreCard"></div>
+  </div>
+
+  <section class="board-container">
+    <div class="board" id="board"></div>
+  </section>
+
+  <div class="end-game-container">
+    <button class="end-game-btn" onclick="endGameEarly()">END GAME</button>
+  </div>
+</main>
+
+<div class="popup" id="questionPopup">
+    <div class="question-title" id="questionTitle">Solve this aptitude challenge! 🎯</div>
+    <div class="question-body" id="questionBody"></div>
+
+<div class="options-grid" id="optionsGrid"></div>
+
+<div id="wrongMsg" style="display:none; color:#c0392b; font-weight:700; font-size:16px; margin-bottom:10px;">❌ Wrong Answer! Try again.</div>
+
+<button class="btn" onclick="questionDone()">Done</button>
+<button class="btn" onclick="showAnswer()">Answer</button>
+</div>
+
+<div class="popup" id="answerPopup">
+    <div class="answer-wrap">
+        <div id="answerText">Answer will appear here.</div>
+    </div>
+    <button class="btn" onclick="answerDone()">Done</button>
+</div>
+
+<div class="popup" id="teamPopup">
+    <div>Which team answered correctly?</div>
+    <div id="teamButtonsHost" class="team-buttons"></div>
+    <button class="btn" onclick="addScore('NONE')">No One</button>
+</div>
+
+<div class="popup" id="tieBreakerPopup">
+    <div id="tieBreakerText"></div>
+    <div id="tieBreakerButtons"></div>
+</div>
+
+<div class="popup" id="summaryPopup">
+    <div id="summaryText"></div>
+    <button class="btn" onclick="resetGame()">Play Again</button>
+</div>
+
+<!-- Congrats Overlay -->
+<div id="congratsOverlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; flex-direction:column; text-align:center;">
+  <div style="font-family:'Bebas Neue',sans-serif; font-size:80px; color:#ffd166; letter-spacing:4px; text-shadow:0 0 40px rgba(255,209,102,0.9); animation:congratsPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards;">🎉 CORRECT! 🎉</div>
+  <div style="font-family:'Outfit',sans-serif; font-size:20px; color:#e0f7ff; margin-top:14px; letter-spacing:2px; opacity:0.85;">Taking you to the scoreboard...</div>
+</div>
+
+<style>
+@keyframes congratsPop {
+  0%   { transform: scale(0) rotate(-6deg); opacity:0; }
+  65%  { transform: scale(1.18) rotate(2deg); opacity:1; }
+  100% { transform: scale(1) rotate(0deg); opacity:1; }
+}
+</style>
+
+<div class="error-toast" id="errorToast">❌ Wrong Answer! Try again.</div>
+<script>
+// ================= TEAM DATA =================
+const teamsFromStorage = JSON.parse(localStorage.getItem("teams") || "[]");
+const teams = (Array.isArray(teamsFromStorage) && teamsFromStorage.length >= 2 ? teamsFromStorage : [
+  { id: "T1", name: sessionStorage.getItem("teamA") || "Team A", avatar: sessionStorage.getItem("avatarA") || "🦁", score: 0 },
+  { id: "T2", name: sessionStorage.getItem("teamB") || "Team B", avatar: sessionStorage.getItem("avatarB") || "🐯", score: 0 },
+  { id: "T3", name: sessionStorage.getItem("teamC") || "Team C", avatar: sessionStorage.getItem("avatarC") || "🐼", score: 0 }
+]).slice(0, 5).map((t, idx) => ({ id: t.id || `T${idx + 1}`, name: t.name || `Team ${idx + 1}`, avatar: t.avatar || "🚩", score: Number(t.score || 0) }));
+
+const teamIds = teams.map((t) => t.id);
+const teamNames = Object.fromEntries(teams.map((t) => [t.id, t.name]));
+const teamAvatars = Object.fromEntries(teams.map((t) => [t.id, t.avatar]));
+
+function renderScoreboard() {
+  const scoreCard = document.getElementById("scoreCard");
+  scoreCard.innerHTML = "";
+  teams.forEach((team) => {
+    const teamEl = document.createElement("div");
+    teamEl.className = "team";
+    teamEl.id = `team_${team.id}`;
+    teamEl.innerHTML = `
+      <div class="avatar">${team.avatar}</div>
+      <span class="team-name">${team.name}</span>
+      <div class="badge" id="score_${team.id}">${scores[team.id] || 0}</div>
+    `;
+    scoreCard.appendChild(teamEl);
+  });
+}
+
+function renderTeamButtons() {
+  const host = document.getElementById("teamButtonsHost");
+  host.innerHTML = "";
+  teams.forEach((team) => {
+    const btn = document.createElement("button");
+    btn.className = "btn";
+    btn.textContent = team.name;
+    btn.onclick = () => addScore(team.id);
+    host.appendChild(btn);
+  });
+}
+
+function persistTeamsToLocalStorage() {
+  localStorage.setItem("teams", JSON.stringify(
+    teams.map((t) => ({ ...t, score: scores[t.id] || 0 }))
+  ));
+}
+const topicDisplay = document.querySelector(".topic-name");
+const gameSessionId = Number(sessionStorage.getItem("gameSessionId")) || null;
+
+async function logGameEvent(payload) {
+  if (!gameSessionId) return;
+
+  try {
+    await fetch(`/api/sessions/${gameSessionId}/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch (error) {
+    console.error("Event log failed:", error);
+  }
+}
+
+async function syncScores() {
+  if (!gameSessionId) return;
+
+  try {
+    const firstThree = [teamIds[0], teamIds[1], teamIds[2]];
+    await fetch(`/api/sessions/${gameSessionId}/score`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scoreA: scores[firstThree[0]] || 0,
+        scoreB: scores[firstThree[1]] || 0,
+        scoreC: scores[firstThree[2]] || 0
+      })
+    });
+  } catch (error) {
+    console.error("Score sync failed:", error);
+  }
+}
+// ================= QUESTIONS DATA =================
+// ⚠️ IMPORTANT: column-wise order
+const questions = [
+  // Row 1
+  { q:"48 ÷ 6 × (5 + 3) − 12", options:["52","60","44","56"], answer:"52" },
+  { q:"HCF of 84 & 126", options:["14","21","42","7"], answer:"42" },
+  { q:"Which is divisible by 9?", options:["4725","5634","7812","6941"], answer:"5634" },
+  { q:"If CAT→DBU, then DOG→?", options:["EPH","DPH","EOG","FQI"], answer:"EPH" },
+  { q:"Odd one Out: 121,144,169,152", options:["121","144","169","152"], answer:"152" },
+  { q:"Synonym of Rapid", options:["Slow","Fast","Weak","Late"], answer:"Fast" },
+  { q:"What comes next: 2,6,12,20,30", options:["40","42","44","46"], answer:"42" },
+  { q:"Ravi is brother of Sita. Sita is mother of Anu. Ravi is Anu's:", options:["Father","Uncle","Brother","Grandfather"], answer:"Uncle" },
+
+  // Row 2
+  { q:"36 ÷ 9 × 7 + 15", options:["43","42","37","45"], answer:"43" },
+  { q:"LCM of 18 & 24", options:["48","72","96","36"], answer:"72" },
+  { q:"What is the remainder of 3456 ÷ 11", options:["2","3","4","5"], answer:"2" },
+  { q:"If ACE→135, BED→?", options:["254","245","243","235"], answer:"254" },
+  { q:"Odd pair: AB,DE,HI,JL", options:["AB","DE","HI","JL"], answer:"JL" },
+  { q:"Antonym of Ancient", options:["Old","Modern","Historic","Antique"], answer:"Modern" },
+  { q:"A,C,F,J,O", options:["S","T","U","V"], answer:"U" },
+  { q:"Rahul walks 10 m east, 5 m south, 10 m west. He is", options:["5 m North","5 m South","10 m East","10 m West"], answer:"5 m South" },
+
+  // Row 3
+  { q:"(18 + 6) × 4 ÷ 8", options:["10","12","14","16"], answer:"12" },
+  { q:"HCF=12, LCM=180 → product?", options:["1800","2160","2400","1440"], answer:"2160" },
+  { q:"Greatest 4-digit divisible by 12", options:["9984","9996","9972","9960"], answer:"9996" },
+  { q:"If TOP→POT, LIVE→?", options:["EVIL","VILE","LEVI","VEIL"], answer:"EVIL" },
+  { q:"Odd one: 8,27,64,100", options:["8","27","64","100"], answer:"100" },
+  { q:"Synonym of Brave", options:["Cowardly","Fearless","Lazy","Weak"], answer:"Fearless" },
+  { q:"5,15,45,135", options:["270","365","405","420"], answer:"405" },
+  { q:"A, B, C, and D are sitting in a row. A is left to the B. C is right to the B. Who is in the middle?", options:["A","B","C","Cannot be determined"], answer:"Cannot be determined" },
+
+  // Row 4
+  { q:"50 − 8 × 3 + 6", options:["32","30","26","28"], answer:"32" },
+  { q:"HCF of 2³×3² and 2⁴×3", options:["2³×3","2⁴×3²","2³×3²","2²×3"], answer:"2³×3" },
+  { q:"Sum digits divisible by 3 → number divisible by?", options:["6","3","9","11"], answer:"3" },
+  { q:"If MATH→NZUI, CODE→?", options:["DPEF","BPCF","DPED","EPFG"], answer:"DPED" },
+  { q:"Odd animal", options:["Tiger","Lion","Leopard","Cow"], answer:"Cow" },
+  { q:"Antonym of Expand", options:["Grow","Spread","Contract","Increase"], answer:"Contract" },
+  { q:"1,4,9,16,25", options:["30","35","36","49"], answer:"36" },
+  { q:"Bird : Nest :: Bee : ?", options:["Kennel","Hive","Tree","Honey"], answer:"Hive" },
+
+  // Row 5
+  { q:"64 ÷ 8 × (9 − 5)", options:["32","16","24","20"], answer:"32" },
+  { q:"LCM of 3²×5 and 3×5²", options:["3²×5²","3×5","3²×5","3×5²"], answer:"3²×5²" },
+  { q:"Unit digit of 7⁴⁵", options:["1","3","7","9"], answer:"3" },
+  { q:"The value of MAN is 28, then the value of FAN", options:["21","19","25","23"], answer:"21" },
+  { q:"Odd series", options:["3,9,27","4,16,64","5,25,125","6,18,54"], answer:"6,18,54" },
+  { q:"Synonym of Assist", options:["Help","Refuse","Delay","Stop"], answer:"Help" },
+  { q:"Z,X,U,Q", options:["M","N","O","P"], answer:"M" },
+  { q:"Odd pair", options:["Knife–Cut","Pen–Write","Spoon–Eat","Book–Swim"], answer:"Book–Swim" }
+];
+
+// ================= DOM =================
+const board = document.getElementById("board");
+const questionPopup = document.getElementById("questionPopup");
+const questionTitle = document.getElementById("questionTitle");
+const questionBody = document.getElementById("questionBody");
+const answerPopup = document.getElementById("answerPopup");
+const answerText = document.getElementById("answerText");
+const teamPopup = document.getElementById("teamPopup");
+const scoreCard = document.getElementById("scoreCard");
+
+let scores = Object.fromEntries(teamIds.map((id) => [id, 0]));
+let currentObject = null;
+let currentQuestionIndex = null;
+
+const icons = ["📘","✏️","📐","🧠","💡","📊","📝","🎯","🔍","📚","🧩","⏱️"];
+
+const topics = [
+  "Simplification","HCF & LCM","Numbers","Coding-Decoding",
+  "Odd One Out","Synonym-Antonym","Series","Logical Puzzle"
+];
+
+// ================= CREATE GRID =================
+function createObjects() {
+    board.innerHTML = "";
+
+    for (let i = 0; i < questions.length; i++) {
+        const obj = document.createElement("div");
+
+        // 🎯 column detection
+        let col = i % 8;
+
+        // 🎯 color per column
+        const colors = ["c4","c1","c2","c3","c4","c1","c2","c3"];
+        obj.classList.add("object", colors[col]);
+
+        obj.innerText = icons[i % icons.length];
+
+        obj.onclick = () => {
+    if (obj.classList.contains("completed")) return;
+
+    currentObject = obj;
+    currentQuestionIndex = i;
+
+    const qData = questions[i];
+    logGameEvent({
+      eventType: "question_opened",
+      questionIndex: i,
+      questionText: qData.q
+    });
+
+    // 🎯 UPDATE TOPIC DISPLAY (TOP-LEFT BOX)
+    topicDisplay.innerText = topics[col];
+
+    // 🎯 Show question number
+    questionTitle.innerText = "Question " + (Math.floor(i / 8) + 1);
+
+    // 🎯 Show question text
+    questionBody.innerText = qData.q;
+
+    document.getElementById("wrongMsg").style.display = "none";
+
+    const optionsGrid = document.getElementById("optionsGrid");
+    optionsGrid.innerHTML = "";
+
+   qData.options.forEach((opt, index) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerText = String.fromCharCode(65 + index) + ") " + opt;
+
+    div.onclick = () => {
+        const selected = opt;
+        const correct = questions[currentQuestionIndex].answer;
+
+        if (selected !== correct) {
+            document.getElementById("wrongMsg").style.display = "block";
+            logGameEvent({
+              eventType: "answer_attempt_wrong",
+              questionIndex: currentQuestionIndex,
+              questionText: questions[currentQuestionIndex].q,
+              selectedOption: selected,
+              correctOption: correct
+            });
+            return;
+        }
+
+        document.getElementById("wrongMsg").style.display = "none";
+        questionPopup.classList.remove("show");
+        stopTimer();
+        window.lastAnswerCorrect = true;
+        logGameEvent({
+          eventType: "answer_attempt_correct",
+          questionIndex: currentQuestionIndex,
+          questionText: questions[currentQuestionIndex].q,
+          selectedOption: selected,
+          correctOption: correct
+        });
+
+        // Show congrats overlay, then open team popup
+        const overlay = document.getElementById("congratsOverlay");
+        overlay.style.display = "flex";
+        const rect = currentObject.getBoundingClientRect();
+        burstConfetti(rect.left + rect.width/2, rect.top + rect.height/2);
+        setTimeout(() => {
+            overlay.style.display = "none";
+            teamPopup.classList.add("show");
+        }, 1800);
+    };
+
+    optionsGrid.appendChild(div);
+});
+
+    questionPopup.classList.add("show");
+    startTimer();
+};
+
+        board.appendChild(obj);
+    }
+}
+
+// ================= TIMER =================
+const TIMER_DURATION = 30;
+let timerInterval = null;
+let timerSeconds = TIMER_DURATION;
+
+function startTimer() {
+    stopTimer();
+    timerSeconds = TIMER_DURATION;
+    updateTimerUI();
+    timerInterval = setInterval(() => {
+        timerSeconds--;
+        updateTimerUI();
+        if (timerSeconds <= 0) {
+            stopTimer();
+            // time's up — auto show team popup
+            questionPopup.classList.remove("show");
+            teamPopup.classList.add("show");
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    const tv = document.getElementById("timerValue");
+    tv.classList.remove("urgent");
+}
+
+function resetTimerDisplay() {
+    stopTimer();
+    timerSeconds = TIMER_DURATION;
+    document.getElementById("timerValue").textContent = TIMER_DURATION;
+    document.getElementById("timerValue").classList.remove("urgent");
+    document.getElementById("timerBar").style.width = "100%";
+    document.getElementById("timerBar").style.background = "linear-gradient(90deg,#2ecc71,#ffd166)";
+}
+
+function updateTimerUI() {
+    const tv = document.getElementById("timerValue");
+    const bar = document.getElementById("timerBar");
+    tv.textContent = timerSeconds;
+    const pct = (timerSeconds / TIMER_DURATION) * 100;
+    bar.style.width = pct + "%";
+    if (timerSeconds <= 10) {
+        tv.classList.add("urgent");
+        bar.style.background = "linear-gradient(90deg,#e74c3c,#f39c12)";
+    } else {
+        tv.classList.remove("urgent");
+        bar.style.background = "linear-gradient(90deg,#2ecc71,#ffd166)";
+    }
+}
+
+// ================= POPUP FLOW =================
+function questionDone() {
+    questionPopup.classList.remove("show");
+    stopTimer();
+    teamPopup.classList.add("show");
+}
+
+function showAnswer() {
+    answerText.innerText = "Answer: " + questions[currentQuestionIndex].answer;
+    questionPopup.classList.remove("show");
+    stopTimer();
+    answerPopup.classList.add("show");
+}
+
+function answerDone() {
+    answerPopup.classList.remove("show");
+    teamPopup.classList.add("show");
+}
+
+function addScore(team) {
+
+    if (team !== "NONE") {
+        scores[team] = (scores[team] || 0) + 1;
+        const badge = document.getElementById("score_" + team);
+        if (badge) badge.innerText = scores[team];
+    }
+
+    logGameEvent({
+      eventType: "score_awarded",
+      questionIndex: currentQuestionIndex,
+      questionText: currentQuestionIndex !== null ? questions[currentQuestionIndex].q : null,
+      awardedTeam: team
+    });
+    syncScores();
+    persistTeamsToLocalStorage();
+
+    teamPopup.classList.remove("show");
+    if (currentObject) {
+        currentObject.classList.add("flip");
+
+        setTimeout(() => {
+            if (team === "NONE") {
+                currentObject.classList.add("no-one");
+                currentObject.innerText = "";
+            } else {
+                currentObject.classList.add("completed");
+                currentObject.innerText = "✔";
+            }
+        }, 300);
+
+        const rect = currentObject.getBoundingClientRect();
+        burstConfetti(rect.left + rect.width/2, rect.top + rect.height/2);
+    }
+}
+
+// ================= ESC CLOSE =================
+document.addEventListener("keydown", (event) => {
+
+    // CTRL + 7 → Toggle scoreboard
+    if (event.ctrlKey && event.key === "7") {
+        scoreCard.classList.toggle("revealed");
+    }
+
+    // ESC → Close all popups
+    if (event.key === "Escape") {
+        questionPopup.style.display = "show";
+        questionPopup.classList.remove("show");
+        answerPopup.classList.remove("show");
+        teamPopup.classList.remove("show");
+        resetTimerDisplay();
+
+        // 🎯 Reset topic display
+        topicDisplay.innerText = "—";
+
+        // 🎯 Clear question content
+        questionBody.innerText = "";
+        document.getElementById("optionsGrid").innerHTML = "";
+    }
+
+});
+
+// ================= INIT =================
+renderScoreboard();
+renderTeamButtons();
+persistTeamsToLocalStorage();
+createObjects();
+function burstConfetti(x, y) {
+    const colors = ["#f94144","#f3722c","#f9c74f","#90be6d","#577590"];
+
+    for (let i = 0; i < 18; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti-piece";
+
+        piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+        piece.style.left = x + "px";
+        piece.style.top = y + "px";
+
+        piece.style.setProperty("--dx", (Math.random()*200 - 100) + "px");
+        piece.style.setProperty("--dy", (Math.random()*200 - 100) + "px");
+        piece.style.setProperty("--rot", (Math.random()*360) + "deg");
+        piece.style.setProperty("--dur", (Math.random()*0.6 + 0.6) + "s");
+
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 1200);
+    }
+}
+
+let sessionClosed = false;
+let resultSaved = false;
+
+function getWinnerFromScores() {
+    const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    if (entries.length < 2) return entries[0][0];
+    return entries[0][1] === entries[1][1] ? null : entries[0][0];
+}
+
+async function closeCurrentSession(reason) {
+    if (!gameSessionId || sessionClosed) return;
+
+    const winner = getWinnerFromScores();
+    const winnerName = winner ? (teamNames[winner] || winner) : "TIE";
+    sessionClosed = true;
+
+    await logGameEvent({
+        eventType: reason,
+        awardedTeam: winnerName
+    });
+
+    if (!resultSaved) {
+        try {
+            await fetch("/save-result", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    teamA: teams[0]?.name || "Team A",
+                    teamB: teams[1]?.name || "Team B",
+                    teamC: teams[2]?.name || "Team C",
+                    scoreA: scores[teams[0]?.id] || 0,
+                    scoreB: scores[teams[1]?.id] || 0,
+                    scoreC: scores[teams[2]?.id] || 0,
+                    winner: winnerName
+                })
+            });
+            resultSaved = true;
+        } catch (error) {
+            console.error("Failed to save final result:", error);
+        }
+    }
+
+    try {
+        await fetch(`/api/sessions/${gameSessionId}/complete`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                winner,
+                scoreA: scores[teams[0]?.id] || 0,
+                scoreB: scores[teams[1]?.id] || 0,
+                scoreC: scores[teams[2]?.id] || 0
+            })
+        });
+    } catch (error) {
+        sessionClosed = false;
+        console.error("Failed to close game session:", error);
+    }
+}
+
+async function endGameEarly() {
+    const ok = window.confirm("End the game now and save progress?");
+    if (!ok) return;
+
+    const finalTeams = teams.map((t) => ({
+      id: t.id,
+      name: t.name,
+      avatar: t.avatar,
+      score: scores[t.id] || 0
+    }));
+    localStorage.setItem("finalTeams", JSON.stringify(finalTeams));
+    localStorage.setItem("scores", JSON.stringify({
+      values: Object.fromEntries(finalTeams.map((t) => [t.id, t.score])),
+      teamNames: Object.fromEntries(finalTeams.map((t) => [t.id, t.name]))
+    }));
+
+    await closeCurrentSession("game_ended_early");
+    sessionStorage.removeItem("gameSessionId");
+    window.location.href = "results.html";
+}
+
+async function resetGame() {
+    await closeCurrentSession("game_completed");
+
+    sessionStorage.removeItem("gameSessionId");
+    window.location.href = "arena.html";
+}
+
+window.addEventListener("beforeunload", () => {
+    if (gameSessionId) {
+        closeCurrentSession("game_window_closed");
+    }
+});
+</script>
+</body>
+</html>

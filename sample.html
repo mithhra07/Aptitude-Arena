@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <title>Sample Question | Aptitude Arena</title>
+
+  <style>
+    :root {
+      --ocean-deep: #041e42;
+      --ocean-mid: #0a3d62;
+      --ocean-bright: #1b6ca8;
+      --foam: #e0f7ff;
+      --gold: #f4a300;
+      --gold-light: #ffd166;
+      --card-glass: rgba(255,255,255,0.07);
+      --card-border: rgba(178,235,242,0.2);
+      --success: #53d68a;
+      --danger: #ff7f7f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: "Outfit", sans-serif;
+      background: var(--ocean-deep);
+      position: relative;
+      color: var(--foam);
+    }
+
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(27,108,168,0.55), transparent),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(10,61,98,0.8), transparent),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4,30,66,1), transparent);
+      animation: meshShift 14s ease-in-out infinite alternate;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(178,235,242,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(178,235,242,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .bg-glow {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(244,163,0,0.18), transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.18;
+      z-index: 0;
+      animation: orbFloat linear infinite;
+      pointer-events: none;
+    }
+
+    .orb-1 { width: 300px; height: 300px; background: #1b6ca8; top: 10%; left: 5%; animation-duration: 20s; }
+    .orb-2 { width: 200px; height: 200px; background: #f4a300; bottom: 15%; right: 8%; animation-duration: 27s; animation-direction: reverse; }
+    .orb-3 { width: 160px; height: 160px; background: #0a3d62; top: 60%; left: 40%; animation-duration: 18s; }
+
+    @keyframes meshShift {
+      0%   { filter: hue-rotate(0deg) brightness(1); }
+      100% { filter: hue-rotate(15deg) brightness(1.1); }
+    }
+
+    @keyframes orbFloat {
+      0%   { transform: translate(0,0) scale(1); }
+      33%  { transform: translate(30px,-40px) scale(1.1); }
+      66%  { transform: translate(-20px,25px) scale(0.95); }
+      100% { transform: translate(0,0) scale(1); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .sample-card {
+      width: min(760px, 100%);
+      border-radius: 24px;
+      background: var(--card-glass);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 20px 55px rgba(0,0,0,0.4), 0 0 30px rgba(91,200,220,0.08);
+      padding: clamp(22px, 4vw, 34px);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      animation: floatIn 0.5s ease;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.9;
+      text-align: center;
+    }
+
+    .title {
+      font-family: "Bebas Neue", sans-serif;
+      letter-spacing: 3px;
+      font-size: clamp(40px, 7vw, 54px);
+      line-height: 1;
+      text-align: center;
+      background: linear-gradient(160deg, #ffffff 0%, #b2ebf2 45%, #5bc8dc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 20px rgba(91,200,220,0.35));
+    }
+
+    .question {
+      font-size: clamp(20px, 3.3vw, 28px);
+      line-height: 1.35;
+      text-align: center;
+      font-weight: 600;
+      margin-top: 2px;
+      color: #f3fbff;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      border-radius: 14px;
+      border: 1px solid rgba(178,235,242,0.25);
+      background: rgba(255,255,255,0.06);
+      color: #e0f7ff;
+      padding: 14px 16px;
+      font-family: "Outfit", sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .option:hover {
+      transform: translateY(-2px);
+      border-color: rgba(178,235,242,0.58);
+      background: rgba(255,255,255,0.11);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+    }
+
+    .option.selected {
+      border-color: rgba(255,209,102,0.8);
+      background: rgba(244,163,0,0.16);
+      box-shadow: 0 0 0 2px rgba(244,163,0,0.15);
+    }
+
+    .submit-btn {
+      position: relative;
+      margin-top: 6px;
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 20px;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 25px;
+      letter-spacing: 3px;
+      color: var(--ocean-deep);
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 60%, #e08800 100%);
+      box-shadow: 0 10px 40px rgba(244,163,0,0.35), 0 2px 8px rgba(0,0,0,0.3);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      box-shadow: 0 16px 50px rgba(244,163,0,0.5), 0 4px 16px rgba(0,0,0,0.35);
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result {
+      min-height: 28px;
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      font-size: 16px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .result.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .result.correct { color: var(--success); animation: pulseGreen 0.45s ease; }
+    .result.wrong { color: var(--danger); animation: pulseRed 0.45s ease; }
+
+    @keyframes pulseGreen {
+      0% { text-shadow: 0 0 0 rgba(83,214,138,0); }
+      50% { text-shadow: 0 0 18px rgba(83,214,138,0.65); }
+      100% { text-shadow: 0 0 0 rgba(83,214,138,0); }
+    }
+
+    @keyframes pulseRed {
+      0% { text-shadow: 0 0 0 rgba(255,127,127,0); }
+      50% { text-shadow: 0 0 18px rgba(255,127,127,0.65); }
+      100% { text-shadow: 0 0 0 rgba(255,127,127,0); }
+    }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+      .sample-card { border-radius: 18px; }
+      .option { font-size: 15px; padding: 12px 13px; }
+      .submit-btn { font-size: 23px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <main class="container">
+    <section class="sample-card">
+      <p class="eyebrow">Warm-up Question</p>
+      <h1 class="title">Sample Round</h1>
+      <h2 class="question">A rectangle has length and breadth of 12 cm and 5 cm.
+
+What is the area of the rectangle?</h2>
+
+      <div class="options" id="optionsWrap">
+        <button class="option" data-option="1">A. 60 cm²</button>
+        <button class="option" data-option="2">B. 34 cm²</button>
+        <button class="option" data-option="3">C. 17 cm²</button>
+        <button class="option" data-option="4">D. 120 cm²</button>
+      </div>
+
+      <button class="submit-btn" id="submitBtn">Submit Answer</button>
+      <p class="result" id="resultText"></p>
+    </section>
+  </main>
+
+  <script>
+    const options = document.querySelectorAll(".option");
+    const submitBtn = document.getElementById("submitBtn");
+    const resultText = document.getElementById("resultText");
+    let selectedOption = null;
+
+    options.forEach((option) => {
+      option.addEventListener("click", () => {
+        options.forEach((item) => item.classList.remove("selected"));
+        option.classList.add("selected");
+        selectedOption = option.dataset.option;
+      });
+    });
+
+    submitBtn.addEventListener("click", () => {
+      if (!selectedOption) {
+        resultText.textContent = "Please select an option first.";
+        resultText.className = "result show wrong";
+        return;
+      }
+
+      const isCorrect = selectedOption === "1";
+      submitBtn.disabled = true;
+
+      if (isCorrect) {
+        resultText.textContent = "Correct! 🎉 You start first";
+        resultText.className = "result show correct";
+      } else {
+        resultText.textContent = "Wrong! Other team starts";
+        resultText.className = "result show wrong";
+      }
+
+      setTimeout(() => {
+        window.location.href = "backup.html";
+      }, 2400);
+    });
+  </script>
+</body>
+</html>

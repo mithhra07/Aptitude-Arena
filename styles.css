@@ -1,0 +1,173 @@
+/* ===============================
+GLOBAL THEME (APTITUDE ARENA)
+=============================== */
+
+:root {
+--ocean-deep: #041e42;
+--ocean-mid: #0a3d62;
+--ocean-bright: #1b6ca8;
+--foam: #e0f7ff;
+--gold: #f4a300;
+--gold-light: #ffd166;
+--card-glass: rgba(255,255,255,0.07);
+--card-border: rgba(178,235,242,0.2);
+}
+
+/* RESET */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  }
+
+/* BODY BACKGROUND */
+body {
+min-height: 100vh;
+font-family: 'Outfit', sans-serif;
+color: #f5fbff;
+background: radial-gradient(circle at top, #1b6ca8 0, #041e42 50%, #020b1a 100%);
+overflow-x: hidden;
+position: relative;
+}
+
+/* ===============================
+BACKGROUND LAYERS
+=============================== */
+
+/* Animated mesh gradient */
+.bg-mesh {
+position: fixed;
+inset: 0;
+z-index: -2;
+background:
+radial-gradient(ellipse 70% 60% at 20% 10%, rgba(27, 108, 168, 0.55), transparent),
+radial-gradient(ellipse 55% 80% at 80% 90%, rgba(10, 61, 98, 0.7), transparent),
+radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4, 30, 66, 1), transparent);
+animation: meshShift 16s ease-in-out infinite alternate;
+}
+
+@keyframes meshShift {
+0% {
+filter: hue-rotate(0deg) brightness(1);
+}
+100% {
+filter: hue-rotate(18deg) brightness(1.08);
+}
+}
+
+/* Subtle grid overlay */
+.bg-grid {
+position: fixed;
+inset: 0;
+z-index: -1;
+background-image:
+linear-gradient(rgba(178, 235, 242, 0.03) 1px, transparent 1px),
+linear-gradient(90deg, rgba(178, 235, 242, 0.03) 1px, transparent 1px);
+background-size: 60px 60px;
+pointer-events: none;
+}
+
+/* Glow effect */
+.bg-glow {
+position: fixed;
+top: -120px;
+left: 50%;
+transform: translateX(-50%);
+width: 700px;
+height: 400px;
+background: radial-gradient(ellipse, rgba(244,163,0,0.18), transparent 70%);
+z-index: -1;
+pointer-events: none;
+}
+
+/* Floating orbs */
+.orb {
+position: fixed;
+border-radius: 50%;
+filter: blur(60px);
+opacity: 0.18;
+z-index: -1;
+animation: orbFloat linear infinite;
+pointer-events: none;
+}
+
+.orb-1 {
+width: 300px;
+height: 300px;
+background: #1b6ca8;
+top: 10%;
+left: 5%;
+animation-duration: 20s;
+}
+
+.orb-2 {
+width: 200px;
+height: 200px;
+background: #f4a300;
+bottom: 15%;
+right: 8%;
+animation-duration: 27s;
+animation-direction: reverse;
+}
+
+.orb-3 {
+width: 160px;
+height: 160px;
+background: #0a3d62;
+top: 60%;
+left: 40%;
+animation-duration: 18s;
+}
+
+@keyframes orbFloat {
+0%   { transform: translate(0,0) scale(1); }
+33%  { transform: translate(30px,-40px) scale(1.1); }
+66%  { transform: translate(-20px,25px) scale(0.95); }
+100% { transform: translate(0,0) scale(1); }
+}
+
+/* ===============================
+COMMON UI COMPONENTS
+=============================== */
+
+.container {
+position: relative;
+z-index: 1;
+padding: 40px 20px;
+}
+
+/* Card style */
+.card {
+background: var(--card-glass);
+border-radius: 20px;
+border: 1px solid var(--card-border);
+backdrop-filter: blur(16px);
+padding: 20px;
+box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* Button */
+.btn {
+padding: 10px 18px;
+border-radius: 999px;
+border: none;
+cursor: pointer;
+font-weight: 600;
+background: linear-gradient(135deg, var(--gold-light), var(--gold));
+color: #041e42;
+transition: all 0.2s ease;
+}
+
+.btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 25px rgba(244, 163, 0, 0.5);
+}
+
+/* Title */
+.title {
+font-family: 'Bebas Neue', sans-serif;
+letter-spacing: 4px;
+font-size: 42px;
+text-align: center;
+}

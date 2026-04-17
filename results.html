@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <title>Game Results | Aptitude Arena</title>
+  <style>
+    :root {
+      --deep: #030f1c;
+      --mid: #071e36;
+      --bright: #1b6ca8;
+      --foam: #e0f7ff;
+      --gold: #f4a300;
+      --gold-lt: #ffd166;
+      --glass: rgba(7,30,54,0.72);
+      --glass-border: rgba(178,235,242,0.22);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: "Outfit", sans-serif;
+      color: var(--foam);
+      background:
+        radial-gradient(circle at 50% 44%, rgba(91, 200, 220, 0.11) 0%, rgba(91, 200, 220, 0.04) 24%, transparent 54%),
+        radial-gradient(circle at 52% 40%, rgba(255, 209, 102, 0.08) 0%, transparent 34%),
+        var(--deep);
+      overflow-x: hidden;
+    }
+
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(135deg, #020c17 0%, #041e3a 40%, #071e36 70%, #020c17 100%);
+      background-size: 300% 300%;
+      animation: bgShift 18s ease infinite alternate;
+    }
+
+    .bg-hex {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(178,235,242,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(178,235,242,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    .bg-glow-top {
+      position: fixed;
+      top: -110px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 840px;
+      height: 360px;
+      background: radial-gradient(ellipse, rgba(244,163,0,0.16), transparent 68%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      width: min(920px, 88vw);
+      height: min(620px, 72vh);
+      background:
+        radial-gradient(circle, rgba(91, 200, 220, 0.12) 0%, rgba(91, 200, 220, 0.05) 30%, transparent 68%),
+        radial-gradient(circle, rgba(255, 209, 102, 0.08) 0%, transparent 46%);
+      filter: blur(18px);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .results-card {
+      width: min(760px, 100%);
+      border-radius: 24px;
+      padding: clamp(20px, 4vw, 34px);
+      background: rgba(10, 35, 64, 0.8);
+      border: 1px solid rgba(178, 235, 242, 0.26);
+      backdrop-filter: blur(16px);
+      box-shadow:
+        0 24px 56px rgba(0, 0, 0, 0.42),
+        0 0 0 1px rgba(255, 209, 102, 0.08),
+        0 0 28px rgba(91, 200, 220, 0.1),
+        inset 0 1px 0 rgba(224, 247, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: cardIn 0.68s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .title {
+      text-align: center;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: clamp(40px, 7vw, 58px);
+      letter-spacing: 3px;
+      color: var(--gold-lt);
+      text-shadow: 0 0 22px rgba(255,209,102,0.3);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgba(224,247,255,0.72);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .rows {
+      display: grid;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .team-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.065);
+      border: 1px solid rgba(178, 235, 242, 0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .team-row:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      border-color: rgba(178, 235, 242, 0.3);
+    }
+
+    .team-row.top-score {
+      border-color: rgba(255, 209, 102, 0.72);
+      box-shadow:
+        0 0 0 1px rgba(255, 209, 102, 0.22),
+        0 0 26px rgba(255, 209, 102, 0.16),
+        0 14px 30px rgba(0, 0, 0, 0.22);
+      background: linear-gradient(135deg, rgba(244, 163, 0, 0.18), rgba(255, 255, 255, 0.07));
+    }
+
+    .team-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .team-medal {
+      font-size: 20px;
+      line-height: 1;
+      filter: drop-shadow(0 0 8px rgba(255, 209, 102, 0.18));
+    }
+
+    .team-score {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 34px;
+      letter-spacing: 1px;
+      color: var(--gold-lt);
+    }
+
+    .actions {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-family: "Outfit", sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+    }
+
+    .winner-btn {
+      background: linear-gradient(135deg, #ffe08a 0%, var(--gold-lt) 38%, var(--gold) 100%);
+      color: #041e42;
+      box-shadow:
+        0 12px 30px rgba(244, 163, 0, 0.34),
+        0 0 22px rgba(255, 209, 102, 0.18);
+    }
+
+    .winner-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      filter: brightness(1.04);
+      box-shadow:
+        0 16px 34px rgba(244, 163, 0, 0.4),
+        0 0 30px rgba(255, 209, 102, 0.24);
+    }
+
+    .home-btn {
+      background: rgba(178, 235, 242, 0.06);
+      color: var(--foam);
+      border: 1px solid rgba(178, 235, 242, 0.26);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .home-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(178, 235, 242, 0.12);
+      border-color: rgba(178, 235, 242, 0.4);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 20px;
+    }
+
+    .overlay.show { display: flex; }
+
+    .winner-popup {
+      width: min(520px, 100%);
+      border-radius: 20px;
+      background: rgba(7,30,54,0.9);
+      border: 1px solid rgba(255,209,102,0.45);
+      box-shadow: 0 0 28px rgba(255,209,102,0.25), 0 24px 45px rgba(0,0,0,0.45);
+      text-align: center;
+      padding: 24px;
+      animation: popIn 0.35s ease;
+    }
+
+    .winner-title {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: clamp(36px, 6vw, 52px);
+      letter-spacing: 3px;
+      color: var(--gold-lt);
+      text-shadow: 0 0 22px rgba(255,209,102,0.42);
+    }
+
+    .winner-name {
+      margin-top: 8px;
+      font-size: clamp(24px, 4.8vw, 34px);
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -20px;
+      width: 10px;
+      height: 16px;
+      border-radius: 2px;
+      opacity: 0.95;
+      z-index: 30;
+      animation: confettiFall var(--dur) linear forwards;
+    }
+
+    @keyframes bgShift {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.88); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes confettiFall {
+      to {
+        transform: translateY(110vh) rotate(640deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-layer"></div>
+  <div class="bg-hex"></div>
+  <div class="bg-glow-top"></div>
+
+  <main class="page">
+    <section class="results-card">
+      <h1 class="title">🏆 Game Results</h1>
+      <p class="subtitle">Final score board from the arena</p>
+
+      <div class="rows" id="scoreRows"></div>
+
+      <div class="actions">
+        <button class="btn winner-btn" id="viewWinnerBtn">🎉 View Winner</button>
+        <button class="btn home-btn" onclick="goHome()">Back to Home</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="winnerOverlay">
+    <div class="winner-popup">
+      <div class="winner-title">🎉 WINNER 🎉</div>
+      <div class="winner-name" id="winnerName">Team A Wins!</div>
+      <div class="actions" style="margin-top:14px;">
+        <button class="btn home-btn" onclick="closeWinner()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const storedTeams = JSON.parse(localStorage.getItem("finalTeams") || "null");
+    const fallbackTeams = JSON.parse(localStorage.getItem("teams") || "[]");
+    const sourceTeams = Array.isArray(storedTeams) && storedTeams.length
+      ? storedTeams
+      : (Array.isArray(fallbackTeams) ? fallbackTeams : []);
+
+    const rankedTeams = sourceTeams
+      .map((t, i) => ({
+        id: t.id || `T${i + 1}`,
+        name: t.name || `Team ${i + 1}`,
+        score: Number(t.score || 0)
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    if (!rankedTeams.length) {
+      rankedTeams.push(
+        { id: "T1", name: "Team A", score: 0 },
+        { id: "T2", name: "Team B", score: 0 },
+        { id: "T3", name: "Team C", score: 0 }
+      );
+    }
+
+    const rows = document.getElementById("scoreRows");
+    const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+    const maxScore = rankedTeams[0].score;
+
+    rankedTeams.forEach((entry, index) => {
+      const row = document.createElement("div");
+      row.className = "team-row";
+      if (entry.score === maxScore) row.classList.add("top-score");
+
+      const medal = medals[index] || "";
+
+      row.innerHTML = `
+        <span class="team-name">
+          ${medal ? `<span class="team-medal" aria-hidden="true">${medal}</span>` : ""}
+          <span>${entry.name} →</span>
+        </span>
+        <span class="team-score">${entry.score} points</span>
+      `;
+
+      rows.appendChild(row);
+    });
+
+    document.getElementById("viewWinnerBtn").addEventListener("click", () => {
+      const winnerText = getWinnerText(rankedTeams);
+      document.getElementById("winnerName").textContent = winnerText;
+      document.getElementById("winnerOverlay").classList.add("show");
+      launchConfetti();
+    });
+
+    function getWinnerText(teams) {
+      const max = Math.max(...teams.map((t) => t.score));
+      const winners = teams.filter((t) => t.score === max);
+      if (winners.length > 1) {
+        return "It's a Tie!";
+      }
+      return `${winners[0].name} Wins!`;
+    }
+
+    function closeWinner() {
+      document.getElementById("winnerOverlay").classList.remove("show");
+    }
+
+    function goHome() {
+      sessionStorage.removeItem("gameSessionId");
+      localStorage.removeItem("teams");
+      localStorage.removeItem("teamCount");
+      localStorage.removeItem("finalTeams");
+      window.location.href = "arena.html";
+    }
+
+    function launchConfetti() {
+      const colors = ["#ffd166", "#f4a300", "#5bc8dc", "#2ecc71", "#ffffff"];
+
+      for (let i = 0; i < 90; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty("--dur", (Math.random() * 1.6 + 2.2) + "s");
+        piece.style.transform = `translateY(-20px) rotate(${Math.random() * 240}deg)`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 4200);
+      }
+    }
+  </script>
+</body>
+</html>
