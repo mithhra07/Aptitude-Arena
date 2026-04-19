@@ -83,9 +83,108 @@ db.serialize(() => {
       scoreB INTEGER,
       scoreC INTEGER,
       winner TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_by TEXT,
+      team_count INTEGER,
+      team_names TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS app_meta (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )
+  `);
+
+  // Migration: add dashboard metadata columns and reset legacy rows once.
+  db.all(`PRAGMA table_info(results)`, [], (err, cols) => {
+    if (err) {
+      console.error("Failed to inspect results table:", err.message);
+      return;
+    }
+
+    const colNames = (cols || []).map((c) => c.name);
+    const hasCreatedBy = colNames.includes("created_by");
+    const hasTeamCount = colNames.includes("team_count");
+    const hasTeamNames = colNames.includes("team_names");
+
+    let migrationHappened = false;
+    if (!hasCreatedBy) {
+      migrationHappened = true;
+      db.run(`ALTER TABLE results ADD COLUMN created_by TEXT`);
+    }
+    if (!hasTeamCount) {
+      migrationHappened = true;
+      db.run(`ALTER TABLE results ADD COLUMN team_count INTEGER`);
+    }
+    if (!hasTeamNames) {
+      migrationHappened = true;
+      db.run(`ALTER TABLE results ADD COLUMN team_names TEXT`);
+    }
+
+    // Requirement: clear old/dummy result rows once and keep only fresh matches.
+    const purgeLegacy = () => {
+      db.run(
+        `
+          DELETE FROM results
+          WHERE COALESCE(TRIM(created_by), '') = ''
+             OR COALESCE(team_count, 0) <= 0
+             OR COALESCE(TRIM(team_names), '') = ''
+        `,
+        [],
+        (deleteErr) => {
+          if (deleteErr) {
+            console.error("Failed to clear old results:", deleteErr.message);
+          } else {
+            console.log("Old/dummy results cleared.");
+          }
+        }
+      );
+      db.run(
+        `INSERT OR REPLACE INTO app_meta (key, value) VALUES ('results_cleanup_v2', 'done')`
+      );
+    };
+
+    if (migrationHappened) {
+      purgeLegacy();
+      return;
+    }
+
+    db.get(
+      `SELECT value FROM app_meta WHERE key = 'results_cleanup_v2'`,
+      [],
+      (metaErr, row) => {
+        if (metaErr) {
+          console.error("Failed to inspect app_meta:", metaErr.message);
+          return;
+        }
+        if (!row || row.value !== "done") {
+          purgeLegacy();
+        }
+      }
+    );
+
+    // Remove invalid dashboard rows (null winner, zero teams, missing names).
+    db.run(
+      `
+        DELETE FROM results
+        WHERE winner IS NULL
+           OR TRIM(COALESCE(winner, '')) = ''
+           OR COALESCE(team_count, 0) = 0
+           OR team_names IS NULL
+           OR TRIM(COALESCE(team_names, '')) = ''
+           OR created_by IS NULL
+           OR TRIM(COALESCE(created_by, '')) = ''
+      `,
+      [],
+      (purgeErr) => {
+        if (purgeErr) {
+          console.error("Failed to purge invalid results:", purgeErr.message);
+        }
+      }
+    );
+  });
 });
 
 app.use(cors());
@@ -155,54 +254,29 @@ app.get("/admin/users", (_req, res) => {
   });
 });
 
-app.get("/admin/results", (_req, res) => {
-  db.all(
-    `
-      SELECT id, teamA, teamB, teamC, scoreA, scoreB, scoreC, winner, created_at
-      FROM results
-      ORDER BY id DESC
-    `,
-    [],
-    (err, rows) => {
-      if (err) {
-        console.error("Failed to fetch admin results:", err.message);
-        return res.status(500).json({ success: false, message: "Could not fetch results." });
-      }
+app.get("/admin/results", (req, res) => {
+  const usernameFilter = String(req.query.username || "").trim().toLowerCase();
 
-      const out = rows.map((row) => {
-        const scoreA = Number(row.scoreA ?? 0);
-        const scoreB = Number(row.scoreB ?? 0);
-        const scoreC = Number(row.scoreC ?? 0);
-        const maxScore = Math.max(scoreA, scoreB, scoreC);
+  if (!usernameFilter) {
+    return res.status(400).json({ success: false, message: "username query parameter is required." });
+  }
 
-        let username = "TIE";
-        let score = maxScore;
+  const sql = `
+    SELECT id, winner, created_at, created_by, team_count, team_names
+    FROM results
+    WHERE created_by = ?
+    ORDER BY id DESC
+  `;
 
-        if (row.winner === "A") {
-          username = row.teamA || "Team A";
-          score = scoreA;
-        } else if (row.winner === "B") {
-          username = row.teamB || "Team B";
-          score = scoreB;
-        } else if (row.winner === "C") {
-          username = row.teamC || "Team C";
-          score = scoreC;
-        } else if (row.winner && row.winner !== "TIE") {
-          // Fallback: if stored winner is already a name.
-          username = String(row.winner);
-        }
-
-        return {
-          id: row.id,
-          username,
-          score,
-          date: row.created_at
-        };
-      });
-
-      return res.json(out);
+  db.all(sql, [usernameFilter], (err, rows) => {
+    if (err) {
+      console.error("Failed to fetch admin results:", err.message);
+      return res.status(500).json({ success: false, message: "Could not fetch results." });
     }
-  );
+
+    console.log("[/admin/results] rows for", usernameFilter, rows);
+    return res.json(rows);
+  });
 });
 
 app.get("/api/health", (_req, res) => {
@@ -229,38 +303,104 @@ app.get("/results", (_req, res) => {
 });
 
 app.post("/save-result", (req, res) => {
-  const { teamA, teamB, teamC, scoreA, scoreB, scoreC, winner } = req.body || {};
+  console.log("[/save-result] req.body", req.body);
 
-  if (!teamA || !teamB || !teamC) {
-    return res.status(400).json({ error: "teamA, teamB, and teamC are required." });
+  const body = req.body || {};
+  const created_by = String(body.created_by ?? body.createdBy ?? "").trim().toLowerCase();
+  const team_count = Number(body.team_count ?? body.teamCount);
+  const team_names_raw = body.team_names ?? body.teamNames;
+  const winnerRaw = body.winner;
+  const scoreAIn = body.scoreA ?? body.score_a;
+  const scoreBIn = body.scoreB ?? body.score_b;
+  const scoreCIn = body.scoreC ?? body.score_c;
+  const teamA = body.teamA ?? body.team_a;
+  const teamB = body.teamB ?? body.team_b;
+  const teamC = body.teamC ?? body.team_c;
+  const clientCreatedAt = body.created_at ?? body.createdAt;
+
+  const parsedScoreA = Number(scoreAIn ?? 0);
+  const parsedScoreB = Number(scoreBIn ?? 0);
+  const parsedScoreC = Number(scoreCIn ?? 0);
+
+  let team_names_str = "";
+  if (typeof team_names_raw === "string") {
+    team_names_str = team_names_raw.trim();
+  } else if (Array.isArray(team_names_raw)) {
+    team_names_str = team_names_raw.map((n) => String(n).trim()).filter(Boolean).join(", ");
   }
 
-  const parsedScoreA = Number(scoreA ?? 0);
-  const parsedScoreB = Number(scoreB ?? 0);
-  const parsedScoreC = Number(scoreC ?? 0);
-
-  if (
-    Number.isNaN(parsedScoreA) ||
-    Number.isNaN(parsedScoreB) ||
-    Number.isNaN(parsedScoreC)
-  ) {
-    return res.status(400).json({ error: "Scores must be valid numbers." });
+  const resolvedFromLegacy = [teamA, teamB, teamC].map((n) => String(n || "").trim()).filter(Boolean);
+  if (!team_names_str && resolvedFromLegacy.length) {
+    team_names_str = resolvedFromLegacy.join(", ");
   }
+
+  const nameParts = team_names_str
+    ? team_names_str.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  let parsedTeamCount = Number.isFinite(team_count) && team_count > 0 ? Math.round(team_count) : nameParts.length;
+  if (!parsedTeamCount && nameParts.length) {
+    parsedTeamCount = nameParts.length;
+  }
+
+  const winner = String(winnerRaw ?? "").trim();
+  const storedAt =
+    typeof clientCreatedAt === "string" && /^\d{4}-\d{2}-\d{2}T/.test(clientCreatedAt.trim())
+      ? clientCreatedAt.trim()
+      : new Date().toISOString();
+
+  if (!created_by) {
+    return res.status(400).json({ error: "created_by is required (logged-in username)." });
+  }
+  if (!parsedTeamCount || parsedTeamCount < 1) {
+    return res.status(400).json({ error: "team_count must be a positive number." });
+  }
+  if (!team_names_str) {
+    return res.status(400).json({ error: "team_names is required (comma-separated or array)." });
+  }
+  if (nameParts.length > 0 && parsedTeamCount !== nameParts.length) {
+    return res.status(400).json({ error: "team_count must match the number of entries in team_names." });
+  }
+  if (!winner) {
+    return res.status(400).json({ error: "winner is required (use team name or TIE)." });
+  }
+  if (Number.isNaN(parsedScoreA) || Number.isNaN(parsedScoreB) || Number.isNaN(parsedScoreC)) {
+    return res.status(400).json({ error: "scoreA, scoreB, scoreC must be valid numbers." });
+  }
+
+  const colA = nameParts[0] || null;
+  const colB = nameParts[1] || null;
+  const colC = nameParts[2] || null;
 
   const sql = `
-    INSERT INTO results (teamA, teamB, teamC, scoreA, scoreB, scoreC, winner)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO results (
+      teamA, teamB, teamC, scoreA, scoreB, scoreC, winner, created_by, team_count, team_names, created_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.run(
     sql,
-    [teamA, teamB, teamC, parsedScoreA, parsedScoreB, parsedScoreC, winner || "TIE"],
+    [
+      colA,
+      colB,
+      colC,
+      parsedScoreA,
+      parsedScoreB,
+      parsedScoreC,
+      winner,
+      created_by,
+      parsedTeamCount,
+      team_names_str,
+      storedAt
+    ],
     function onInsert(err) {
       if (err) {
         console.error("Failed to save result:", err.message);
         return res.status(500).json({ error: "Could not save result." });
       }
 
+      console.log("[/save-result] inserted id", this.lastID);
       return res.status(201).json({ resultId: this.lastID });
     }
   );

@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Dashboard | Aptitude Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Nunito:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wood-dark: #3b1f0a;
+      --wood-mid: #6b3a1f;
+      --gold: #f4a300;
+      --gold-bright: #ffd166;
+      --gold-dark: #c47d00;
+      --parchment: #fdf3dc;
+      --ink: #2a1505;
+      --foam: #e0f7ff;
+      --danger: #c0392b;
+      --ok: #1a7a3a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: "Nunito", sans-serif;
+      overflow-x: hidden;
+      position: relative;
+      color: var(--foam);
+    }
+
+    /* ── Sky ── */
+    .sky {
+      position: fixed; inset: 0;
+      background: linear-gradient(180deg, #0d1f45 0%, #1a3a6b 35%, #2d6a9f 65%, #5bafd6 85%, #87ceeb 100%);
+      z-index: 0;
+    }
+    .stars { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+    .star {
+      position: absolute; border-radius: 50%; background: #fff;
+      animation: twinkle linear infinite;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+    .particles { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: var(--gold-bright);
+      animation: floatUp linear infinite; opacity: 0;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      20% { opacity: 0.8; } 80% { opacity: 0.4; }
+      100% { transform: translateY(-120px) scale(0.3); opacity: 0; }
+    }
+    .moon {
+      position: fixed; top: 6%; right: 12%;
+      width: 80px; height: 80px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fffde8, #f4d96a 60%, #d4a820);
+      box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.15);
+      z-index: 4; animation: moonGlow 4s ease-in-out infinite alternate;
+    }
+    @keyframes moonGlow {
+      0% { box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 80px 30px rgba(255,200,50,0.12); }
+      100% { box-shadow: 0 0 45px 15px rgba(255,220,80,0.6), 0 0 110px 40px rgba(255,200,50,0.22); }
+    }
+    .firefly {
+      position: fixed; width: 5px; height: 5px; border-radius: 50%;
+      background: #b8ff80; box-shadow: 0 0 6px 3px rgba(184,255,128,0.7);
+      z-index: 5; animation: fireflyFloat linear infinite; pointer-events: none;
+    }
+    @keyframes fireflyFloat {
+      0% { transform: translate(0,0) scale(1); opacity: 0; }
+      15% { opacity: 1; }
+      50% { transform: translate(var(--dx), var(--dy)) scale(0.8); opacity: 0.8; }
+      85% { opacity: 1; }
+      100% { transform: translate(0,0) scale(1); opacity: 0; }
+    }
+    .ground-wrap {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 3; pointer-events: none;
+    }
+
+    /* ── Page layout ── */
+    .page-wrap {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 28px 20px 100px;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      width: 100%; max-width: 1100px;
+      text-align: center; padding: 20px 0 18px;
+      animation: headerIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes headerIn {
+      from { transform: translateY(-28px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 5px;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 4px; display: flex; align-items: center;
+      justify-content: center; gap: 6px;
+    }
+    .main-title {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: clamp(44px, 8vw, 90px);
+      letter-spacing: 5px; line-height: 0.92;
+      background: linear-gradient(160deg, #ffffff 0%, #b2ebf2 40%, #5bc8dc 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 24px rgba(91,200,220,0.4));
+    }
+    .tagline {
+      margin-top: 8px; font-size: 12px; font-weight: 600;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(224,247,255,0.6);
+    }
+
+    /* ── Wooden frame (shared) ── */
+    .wood-frame {
+      position: relative; padding: 12px; border-radius: 22px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow:
+        0 0 0 3px var(--gold-dark), 0 0 0 5px #5a3800,
+        0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(244,163,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+    .wood-frame::before, .wood-frame::after {
+      content: "✦"; position: absolute; color: var(--gold);
+      font-size: 18px; filter: drop-shadow(0 0 5px rgba(244,163,0,0.6));
+    }
+    .wood-frame::before { top: 6px; left: 10px; }
+    .wood-frame::after  { top: 6px; right: 10px; }
+    .corner-bl, .corner-br {
+      position: absolute; color: var(--gold); font-size: 18px;
+      filter: drop-shadow(0 0 5px rgba(244,163,0,0.6)); z-index: 2;
+    }
+    .corner-bl { bottom: 6px; left: 10px; }
+    .corner-br { bottom: 6px; right: 10px; }
+
+    .parchment {
+      border-radius: 14px;
+      background:
+        radial-gradient(ellipse at 30% 20%, #fff8e8, transparent 50%),
+        linear-gradient(170deg, #fdf3dc 0%, #f5dfa0 60%, #e8c870 100%);
+      padding: clamp(20px, 4vw, 32px);
+      box-shadow: inset 0 0 30px rgba(139,90,20,0.15), inset 0 2px 0 rgba(255,255,255,0.6);
+      border: 1px solid rgba(180,120,20,0.3);
+    }
+
+    /* ── MAIN CARD ── */
+    .main-card {
+      width: min(1000px, 100%);
+      animation: frameIn 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
+    }
+    @keyframes frameIn {
+      from { transform: translateY(28px) scale(0.93); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .card-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+      box-shadow: 0 4px 0 var(--gold-dark), 0 6px 20px rgba(244,163,0,0.4);
+      font-size: 24px;
+      animation: bob 3s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .card-title {
+      font-family: "Cinzel Decorative", serif;
+      font-weight: 900; font-size: clamp(18px, 3.5vw, 28px);
+      color: var(--ink); letter-spacing: 1px;
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+    }
+    .card-sub {
+      font-family: "Cinzel", serif; font-size: 11px;
+      color: var(--wood-mid); letter-spacing: 2px;
+      text-transform: uppercase; margin-top: 3px;
+    }
+
+    .divider {
+      display: flex; align-items: center; gap: 10px; margin: 14px 0;
+    }
+    .divider-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,90,20,0.4), transparent);
+    }
+    .divider-gem { color: var(--gold); font-size: 14px; filter: drop-shadow(0 0 4px rgba(244,163,0,0.5)); }
+
+    /* ── SECTION TRANSITION ── */
+    .section { animation: fadeSection 0.4s ease both; }
+    @keyframes fadeSection {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hidden { display: none !important; }
+
+    /* ── GLOBAL MESSAGE ── */
+    .global-msg {
+      text-align: center; min-height: 18px;
+      font-size: 13px; font-weight: 700;
+      font-family: "Nunito", sans-serif; margin-bottom: 6px;
+    }
+    .global-msg.error { color: var(--danger); }
+    .global-msg.success { color: var(--ok); }
+
+    /* ── BACK BUTTON ── */
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 20px; border-radius: 100px;
+      border: 2px solid rgba(139,90,20,0.4);
+      background: rgba(253,243,220,0.5);
+      color: var(--wood-dark); font-family: "Nunito", sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s ease; margin-bottom: 16px;
+    }
+    .back-btn:hover {
+      background: rgba(253,243,220,0.85);
+      border-color: var(--gold-dark);
+      transform: translateX(-3px);
+    }
+
+    /* ── USER AVATAR GRID ── */
+    .users-label {
+      font-family: "Cinzel", serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: var(--wood-mid); text-align: center; margin-bottom: 18px;
+    }
+
+    .users-grid {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 24px;
+      padding: 8px 0;
+    }
+
+    .user-avatar-btn {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      background: none; border: none; cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .user-avatar-btn:hover { transform: translateY(-4px); }
+    .user-avatar-btn:hover .avatar-ring { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(244,163,0,0.25), 0 8px 22px rgba(0,0,0,0.2); }
+    .user-avatar-btn:hover .avatar-online { background: #22c55e; }
+
+    .avatar-wrap { position: relative; }
+
+    .avatar-circle {
+      width: 76px; height: 76px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Cinzel", serif; font-size: 20px; font-weight: 700;
+      color: var(--ink); letter-spacing: 1px;
+      position: relative; z-index: 1;
+    }
+
+    .avatar-ring {
+      position: absolute; inset: -4px; border-radius: 50%;
+      border: 3px solid rgba(139,90,20,0.3);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+
+    .avatar-online {
+      position: absolute; bottom: 3px; right: 3px;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #94a3b8;
+      border: 2.5px solid #fdf3dc;
+      z-index: 2; transition: background 0.2s;
+    }
+
+    .avatar-name {
+      font-family: "Cinzel", serif; font-size: 12px; font-weight: 600;
+      color: var(--ink); letter-spacing: 0.5px;
+      text-transform: capitalize;
+    }
+    .avatar-matches {
+      font-family: "Nunito", sans-serif; font-size: 11px;
+      font-weight: 700; color: var(--wood-mid);
+    }
+
+    /* ── Empty / Loading states ── */
+    .empty-state {
+      text-align: center; padding: 32px 16px;
+      color: var(--wood-mid); font-family: "Cinzel", serif;
+      font-size: 13px; letter-spacing: 1px;
+    }
+
+    /* ── PASSWORD MODAL ── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; z-index: 50;
+      animation: backdropIn 0.2s ease;
+    }
+    @keyframes backdropIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    .modal-wood {
+      width: min(400px, 100%);
+      position: relative; padding: 10px; border-radius: 20px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow: 0 0 0 2px var(--gold-dark), 0 0 0 4px #5a3800, 0 24px 55px rgba(0,0,0,0.7), 0 0 36px rgba(244,163,0,0.2);
+      animation: modalPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-corner {
+      position: absolute; color: var(--gold); font-size: 14px;
+      filter: drop-shadow(0 0 4px rgba(244,163,0,0.6));
+    }
+    .modal-corner.tl { top: 5px; left: 8px; }
+    .modal-corner.tr { top: 5px; right: 8px; }
+    .modal-corner.bl { bottom: 5px; left: 8px; }
+    .modal-corner.br { bottom: 5px; right: 8px; }
+
+    .modal-parchment {
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse at 30% 20%, #fff8e8, transparent 50%),
+        linear-gradient(170deg, #fdf3dc 0%, #f5dfa0 60%, #e8c870 100%);
+      padding: 22px 20px 20px;
+      box-shadow: inset 0 0 24px rgba(139,90,20,0.15), inset 0 2px 0 rgba(255,255,255,0.6);
+      border: 1px solid rgba(180,120,20,0.3);
+      text-align: center;
+    }
+
+    .modal-avatar-circle {
+      width: 58px; height: 58px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Cinzel", serif; font-size: 16px; font-weight: 700;
+      color: var(--ink); margin: 0 auto 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      border: 3px solid rgba(139,90,20,0.35);
+    }
+
+    .modal-title {
+      font-family: "Cinzel Decorative", serif;
+      font-size: 15px; font-weight: 700; color: var(--ink);
+      letter-spacing: 1px; margin-bottom: 4px;
+    }
+    .modal-username-label {
+      font-family: "Cinzel", serif; font-size: 12px;
+      color: var(--wood-mid); letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    .field-label {
+      display: block; font-family: "Cinzel", serif;
+      font-size: 11px; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--wood-dark);
+      margin-bottom: 6px; text-align: left;
+    }
+    .field-icon-wrap { position: relative; display: flex; align-items: center; }
+    .field-icon { position: absolute; left: 11px; font-size: 15px; pointer-events: none; }
+
+    .pw-input {
+      width: 100%; border: 2px solid rgba(139,90,20,0.3); border-radius: 10px;
+      background: rgba(255,255,255,0.55); color: var(--ink);
+      padding: 11px 12px 11px 36px;
+      font-family: "Nunito", sans-serif; font-size: 14px; font-weight: 600;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .pw-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(244,163,0,0.2); }
+    .pw-input::placeholder { color: rgba(42,21,5,0.4); }
+
+    .modal-msg {
+      min-height: 18px; font-size: 12px; font-weight: 700;
+      font-family: "Nunito", sans-serif; margin: 8px 0 10px;
+      text-align: center;
+    }
+    .modal-msg.error { color: var(--danger); }
+    .modal-msg.success { color: var(--ok); }
+
+    .modal-btns { display: flex; gap: 10px; justify-content: center; }
+
+    .btn-gold {
+      border: none; border-radius: 12px; padding: 10px 24px;
+      font-family: "Nunito", sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; color: var(--ink);
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+      box-shadow: 0 4px 0 var(--gold-dark), 0 8px 20px rgba(244,163,0,0.35);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .btn-gold:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    .btn-gold:active { transform: translateY(1px); }
+    .btn-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-wood {
+      border: 2px solid rgba(139,90,20,0.4); border-radius: 12px;
+      padding: 10px 24px;
+      font-family: "Nunito", sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; color: var(--wood-dark); background: rgba(253,243,220,0.6);
+      transition: all 0.15s ease;
+    }
+    .btn-wood:hover { background: rgba(253,243,220,0.9); border-color: var(--gold-dark); transform: translateY(-2px); }
+
+    /* ── RESULTS TABLE ── */
+    .results-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .results-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Cinzel", serif; font-size: 13px; font-weight: 700;
+      color: var(--ink); flex-shrink: 0;
+      border: 2.5px solid rgba(139,90,20,0.35);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+    .results-welcome {
+      font-family: "Cinzel Decorative", serif;
+      font-size: clamp(13px, 2.5vw, 18px); font-weight: 700;
+      color: var(--ink); letter-spacing: 0.5px;
+    }
+    .results-sub {
+      font-family: "Cinzel", serif; font-size: 11px;
+      color: var(--wood-mid); letter-spacing: 1px; margin-top: 2px;
+    }
+    .switch-btn {
+      margin-left: auto; padding: 7px 16px; border-radius: 100px;
+      border: 2px solid rgba(139,90,20,0.35);
+      background: rgba(253,243,220,0.5);
+      color: var(--wood-dark); font-family: "Nunito", sans-serif;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: all 0.15s ease; white-space: nowrap;
+    }
+    .switch-btn:hover { background: rgba(253,243,220,0.9); border-color: var(--gold-dark); }
+
+    .table-wrap {
+      overflow-x: auto; border-radius: 12px;
+      border: 1.5px solid rgba(139,90,20,0.25);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.4);
+    }
+
+    .results-table {
+      width: 100%; border-collapse: collapse; min-width: 560px;
+    }
+    .results-table th {
+      padding: 11px 14px; text-align: left;
+      font-family: "Cinzel", serif; font-size: 11px; font-weight: 600;
+      letter-spacing: 2px; text-transform: uppercase;
+      background: rgba(244,163,0,0.18); color: var(--wood-dark);
+      border-bottom: 1.5px solid rgba(139,90,20,0.2);
+    }
+    .results-table td {
+      padding: 11px 14px; text-align: left;
+      font-family: "Nunito", sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--ink); border-bottom: 1px solid rgba(139,90,20,0.14);
+    }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr:hover td { background: rgba(244,163,0,0.07); }
+
+    .winner-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 100px;
+      background: linear-gradient(135deg, rgba(244,163,0,0.25), rgba(244,163,0,0.1));
+      border: 1.5px solid rgba(244,163,0,0.5);
+      color: #7a4a00; font-size: 12px; font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .users-grid { gap: 16px; }
+      .avatar-circle { width: 62px; height: 62px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sky"></div>
+  <div class="stars" id="stars"></div>
+  <div class="particles" id="particles"></div>
+  <div class="moon"></div>
+
+  <!-- Ground hills -->
+  <div class="ground-wrap">
+    <svg viewBox="0 0 1440 260" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:auto;">
+      <defs>
+        <linearGradient id="hB" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a5c32"/><stop offset="100%" stop-color="#0c3318"/>
+        </linearGradient>
+        <linearGradient id="hG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a7a45"/><stop offset="100%" stop-color="#1a5c32"/>
+        </linearGradient>
+        <linearGradient id="hF" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0f4520"/><stop offset="100%" stop-color="#061a0d"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#hB)" d="M0,200 C100,100 250,60 400,120 C550,180 650,50 800,80 C950,110 1100,60 1200,100 C1300,140 1380,100 1440,120 L1440,260 L0,260 Z"/>
+      <path fill="url(#hG)" d="M0,220 C80,160 200,120 320,150 C440,180 540,100 680,130 C820,160 940,110 1100,140 C1260,170 1380,130 1440,150 L1440,260 L0,260 Z"/>
+      <path fill="url(#hF)" d="M0,245 C120,210 280,195 440,215 C600,235 740,200 880,215 C1020,230 1180,205 1340,220 L1440,240 L1440,260 L0,260 Z"/>
+      <rect fill="#082010" x="60" y="168" width="8" height="30" rx="2"/>
+      <ellipse fill="#0f4520" cx="64" cy="162" rx="16" ry="20"/>
+      <ellipse fill="#1a6030" cx="64" cy="155" rx="10" ry="14"/>
+      <rect fill="#082010" x="1320" y="152" width="8" height="30" rx="2"/>
+      <ellipse fill="#0f4520" cx="1324" cy="146" rx="18" ry="22"/>
+      <ellipse fill="#1a6030" cx="1324" cy="138" rx="11" ry="15"/>
+    </svg>
+  </div>
+
+  <div class="page-wrap">
+
+    <!-- ── HEADER ── -->
+    <header class="site-header">
+      <p class="eyebrow"><span>⚡</span> Aptitude Arena</p>
+      <h1 class="main-title">Warriors Hall</h1>
+      <p class="tagline">Select your warrior &nbsp;·&nbsp; View your battles</p>
+    </header>
+
+    <!-- ── MAIN CARD ── -->
+    <div class="main-card wood-frame">
+      <span class="corner-bl">✦</span>
+      <span class="corner-br">✦</span>
+
+      <div class="parchment">
+
+        <div style="text-align:center; margin-bottom:14px;">
+          <div><span class="card-icon">⚔️</span></div>
+          <h2 class="card-title" style="margin-top:8px;">Personal Dashboard</h2>
+          <p class="card-sub">Choose your warrior to view battle history</p>
+        </div>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-gem">◆</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <p id="globalMsg" class="global-msg"></p>
+
+        <!-- ── USER SELECTION ── -->
+        <section id="userSelectionSection" class="section">
+          <button class="back-btn" onclick="goHome()">← Back to Arena</button>
+          <p class="users-label">⚔ Choose Your Warrior</p>
+          <div class="users-grid" id="usersGrid"></div>
+          <p id="usersEmpty" class="empty-state hidden">No warriors registered yet.</p>
+        </section>
+
+        <!-- ── RESULTS SECTION ── -->
+        <section id="dashboardSection" class="section hidden">
+          <div class="results-header">
+            <div class="results-avatar" id="resultsAvatar"></div>
+            <div>
+              <div class="results-welcome" id="welcomeLabel">Welcome, Commander</div>
+              <div class="results-sub" id="matchCountLabel">Loading battles...</div>
+            </div>
+            <button class="switch-btn" onclick="switchUser()">⇄ Switch Warrior</button>
+          </div>
+
+          <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-gem">◆</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Teams</th>
+                  <th>Team Names</th>
+                  <th>🏆 Winner</th>
+                  <th>Date &amp; Time</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTbody"></tbody>
+            </table>
+          </div>
+          <p id="resultsEmpty" class="empty-state hidden">No battles found for this warrior.</p>
+        </section>
+
+      </div>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+  <!-- ── PASSWORD MODAL ── -->
+  <div id="passwordModal" class="modal-backdrop hidden">
+    <div class="modal-wood">
+      <span class="modal-corner tl">✦</span>
+      <span class="modal-corner tr">✦</span>
+      <span class="modal-corner bl">✦</span>
+      <span class="modal-corner br">✦</span>
+      <div class="modal-parchment">
+        <div class="modal-avatar-circle" id="modalAvatar"></div>
+        <div class="modal-title">Verify Identity</div>
+        <div class="modal-username-label" id="modalUsernameLabel">—</div>
+        <label class="field-label" for="passwordInput">🔑 Secret Key</label>
+        <div class="field-icon-wrap">
+          <span class="field-icon">🔒</span>
+          <input id="passwordInput" class="pw-input" type="password" placeholder="Enter your password" autocomplete="off">
+        </div>
+        <p id="modalMsg" class="modal-msg"></p>
+        <div class="modal-btns">
+          <button class="btn-gold" id="submitPwBtn" onclick="submitPassword()">Open Dashboard</button>
+          <button class="btn-wood" onclick="closeModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ── Background effects ── */
+    const starsEl = document.getElementById("stars");
+    for (let i = 0; i < 100; i++) {
+      const s = document.createElement("div");
+      s.className = "star";
+      const size = Math.random() * 2.5 + 0.5;
+      s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*70}%;width:${size}px;height:${size}px;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*6}s;`;
+      starsEl.appendChild(s);
+    }
+    const partEl = document.getElementById("particles");
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.cssText = `left:${Math.random()*100}%;bottom:${Math.random()*40+10}%;animation-duration:${4+Math.random()*6}s;animation-delay:${Math.random()*8}s;width:${Math.random()*4+2}px;height:${Math.random()*4+2}px;`;
+      partEl.appendChild(p);
+    }
+    for (let i = 0; i < 14; i++) {
+      const f = document.createElement("div");
+      f.className = "firefly";
+      f.style.cssText = `left:${Math.random()*90+5}%;top:${Math.random()*60+20}%;animation-duration:${6+Math.random()*8}s;animation-delay:${Math.random()*10}s;--dx:${(Math.random()-0.5)*120}px;--dy:${(Math.random()-0.5)*80}px;`;
+      document.body.appendChild(f);
+    }
+
+    /* ── Avatar color palette (parchment-safe warm tones) ── */
+    const PALETTES = [
+      { bg: "#dbeafe", color: "#1e3a5f" },
+      { bg: "#dcfce7", color: "#14532d" },
+      { bg: "#fce7f3", color: "#831843" },
+      { bg: "#fef9c3", color: "#713f12" },
+      { bg: "#ede9fe", color: "#3b0764" },
+      { bg: "#ffedd5", color: "#7c2d12" },
+      { bg: "#e0f2fe", color: "#0c4a6e" },
+      { bg: "#f0fdf4", color: "#14532d" },
+    ];
+
+    function getPalette(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return PALETTES[Math.abs(hash) % PALETTES.length];
+    }
+
+    function getInitials(name) {
+      const parts = name.trim().split(/\s+/);
+      return parts.length >= 2
+        ? (parts[0][0] + parts[1][0]).toUpperCase()
+        : name.slice(0, 2).toUpperCase();
+    }
+
+    /* ── State ── */
+    let selectedUsername = "";
+    let loggedInUsername = "";
+    let matchCounts = {};   // { username: count }
+
+    /* ── DOM refs ── */
+    const userSelectionSection = document.getElementById("userSelectionSection");
+    const dashboardSection     = document.getElementById("dashboardSection");
+    const usersGrid            = document.getElementById("usersGrid");
+    const usersEmpty           = document.getElementById("usersEmpty");
+    const resultsTbody         = document.getElementById("resultsTbody");
+    const resultsEmpty         = document.getElementById("resultsEmpty");
+    const globalMsg            = document.getElementById("globalMsg");
+    const passwordModal        = document.getElementById("passwordModal");
+    const passwordInput        = document.getElementById("passwordInput");
+    const modalMsg             = document.getElementById("modalMsg");
+    const submitPwBtn          = document.getElementById("submitPwBtn");
+
+    function setGlobalMsg(text, type = "") {
+      globalMsg.textContent = text;
+      globalMsg.className = `global-msg ${type}`.trim();
+    }
+    function setModalMsg(text, type = "") {
+      modalMsg.textContent = text;
+      modalMsg.className = `modal-msg ${type}`.trim();
+    }
+
+    function goHome() { window.location.href = "arena.html"; }
+
+    function formatIST(value) {
+      if (!value) return "—";
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return String(value);
+      return d.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "numeric", month: "short", year: "numeric",
+        hour: "numeric", minute: "2-digit", hour12: true
+      });
+    }
+
+    /* ── Load users ── */
+    async function loadUsers() {
+      usersGrid.innerHTML = `<p class="empty-state" style="width:100%;text-align:center;">⏳ Summoning warriors...</p>`;
+      usersEmpty.classList.add("hidden");
+      try {
+        const res = await fetch("/admin/users");
+        if (!res.ok) throw new Error("Could not fetch warriors.");
+        const users = await res.json();
+        renderUsers(users);
+      } catch (err) {
+        usersGrid.innerHTML = "";
+        usersEmpty.classList.remove("hidden");
+        usersEmpty.textContent = err.message || "Failed to load warriors.";
+      }
+    }
+
+    function renderUsers(users) {
+      usersGrid.innerHTML = "";
+      const rows = Array.isArray(users) ? users : [];
+      if (!rows.length) { usersEmpty.classList.remove("hidden"); return; }
+      usersEmpty.classList.add("hidden");
+
+      rows.forEach(username => {
+        const pal = getPalette(username);
+        const initials = getInitials(username);
+        const count = matchCounts[username] ?? null;
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "user-avatar-btn";
+        btn.innerHTML = `
+          <div class="avatar-wrap">
+            <div class="avatar-circle" style="background:${pal.bg};color:${pal.color};">${initials}</div>
+            <div class="avatar-ring"></div>
+            <div class="avatar-online"></div>
+          </div>
+          <span class="avatar-name">${username}</span>
+          <span class="avatar-matches">${count !== null ? count + " match" + (count !== 1 ? "es" : "") : "—"}</span>
+        `;
+        btn.addEventListener("click", () => openModal(username, pal, initials));
+        usersGrid.appendChild(btn);
+      });
+    }
+
+    /* ── Password modal ── */
+    function openModal(username, pal, initials) {
+      selectedUsername = username;
+      document.getElementById("modalUsernameLabel").textContent = username;
+      const av = document.getElementById("modalAvatar");
+      av.style.background = pal.bg;
+      av.style.color = pal.color;
+      av.textContent = initials;
+      passwordInput.value = "";
+      setModalMsg("");
+      submitPwBtn.disabled = false;
+      passwordModal.classList.remove("hidden");
+      setTimeout(() => passwordInput.focus(), 50);
+    }
+
+    function closeModal() {
+      passwordModal.classList.add("hidden");
+      selectedUsername = "";
+      setModalMsg("");
+    }
+
+    async function submitPassword() {
+      const password = passwordInput.value.trim();
+      if (!password) { setModalMsg("Please enter your password.", "error"); return; }
+
+      submitPwBtn.disabled = true;
+      setModalMsg("Verifying...");
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: selectedUsername, password })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || "Invalid password.");
+
+        loggedInUsername = selectedUsername;
+        localStorage.setItem("userUsername", loggedInUsername);
+        closeModal();
+        setGlobalMsg("");
+        await loadDashboard();
+      } catch (err) {
+        setModalMsg(err.message || "Could not verify.", "error");
+        submitPwBtn.disabled = false;
+      }
+    }
+
+    /* ── Results dashboard ── */
+    async function loadDashboard() {
+      if (!loggedInUsername) return;
+
+      const pal = getPalette(loggedInUsername);
+      const initials = getInitials(loggedInUsername);
+
+      const av = document.getElementById("resultsAvatar");
+      av.style.background = pal.bg;
+      av.style.color = pal.color;
+      av.textContent = initials;
+
+      document.getElementById("welcomeLabel").textContent = `Welcome, ${loggedInUsername}`;
+      document.getElementById("matchCountLabel").textContent = "Loading battle records...";
+
+      userSelectionSection.classList.add("hidden");
+      dashboardSection.classList.remove("hidden");
+      resultsTbody.innerHTML = "";
+      resultsEmpty.classList.add("hidden");
+
+      try {
+        const res = await fetch(`/admin/results?username=${encodeURIComponent(loggedInUsername)}`);
+        if (!res.ok) throw new Error("Could not fetch battle history.");
+        const results = await res.json();
+        renderResults(results);
+        const count = Array.isArray(results) ? results.length : 0;
+        document.getElementById("matchCountLabel").textContent =
+          count === 0 ? "No battles yet" : `${count} battle${count !== 1 ? "s" : ""} recorded`;
+        matchCounts[loggedInUsername] = count;
+      } catch (err) {
+        resultsEmpty.classList.remove("hidden");
+        resultsEmpty.textContent = err.message || "Failed to load battles.";
+        document.getElementById("matchCountLabel").textContent = "Could not load";
+      }
+    }
+
+    function renderResults(rows) {
+      resultsTbody.innerHTML = "";
+      const results = Array.isArray(rows) ? rows : [];
+      if (!results.length) { resultsEmpty.classList.remove("hidden"); return; }
+      resultsEmpty.classList.add("hidden");
+
+      results.forEach((row, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${Number(row.team_count ?? 0)}</td>
+          <td>${row.team_names || "—"}</td>
+          <td><span class="winner-badge">🏆 ${row.winner || "—"}</span></td>
+          <td>${formatIST(row.created_at)}</td>
+        `;
+        resultsTbody.appendChild(tr);
+      });
+    }
+
+    function switchUser() {
+      loggedInUsername = "";
+      dashboardSection.classList.add("hidden");
+      userSelectionSection.classList.remove("hidden");
+      resultsTbody.innerHTML = "";
+      setGlobalMsg("");
+      loadUsers();
+    }
+
+    /* ── Keyboard shortcuts ── */
+    document.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !passwordModal.classList.contains("hidden")) submitPassword();
+      if (e.key === "Escape" && !passwordModal.classList.contains("hidden")) closeModal();
+    });
+
+    /* ── Init ── */
+    (async function init() {
+      loggedInUsername = "";
+      dashboardSection.classList.add("hidden");
+      userSelectionSection.classList.remove("hidden");
+      await loadUsers();
+    })();
+  </script>
+</body>
+</html>

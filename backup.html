@@ -1149,15 +1149,83 @@ let resultSaved = false;
 
 function getWinnerFromScores() {
     const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    if (!entries.length) return null;
     if (entries.length < 2) return entries[0][0];
     return entries[0][1] === entries[1][1] ? null : entries[0][0];
 }
 
-async function closeCurrentSession(reason) {
-    if (!gameSessionId || sessionClosed) return;
+/** POST /save-result — must run even when there is no gameSessionId (sample → backup flow never sets it). */
+async function saveMatchResultToServer() {
+    if (resultSaved) return { ok: true };
 
-    const winner = getWinnerFromScores();
-    const winnerName = winner ? (teamNames[winner] || winner) : "TIE";
+    const created_by = (localStorage.getItem("userUsername") || "").trim().toLowerCase();
+    if (!created_by) {
+        return { ok: false, message: "No logged-in user. Open the app from the login page so your username is saved, then try again." };
+    }
+
+    const winnerId = getWinnerFromScores();
+    const winner = winnerId ? (teamNames[winnerId] || winnerId) : "TIE";
+    const nameList = teams.map((t) => (t && t.name ? String(t.name).trim() : "")).filter(Boolean);
+    const team_count = teams.length;
+    const team_names = nameList.join(", ");
+    if (!team_names || team_count < 1) {
+        return { ok: false, message: "Team data is missing. Return to the arena and set up teams again." };
+    }
+
+    const id0 = teams[0]?.id;
+    const id1 = teams[1]?.id;
+    const id2 = teams[2]?.id;
+    const scoreA = Number(scores[id0] ?? 0);
+    const scoreB = Number(scores[id1] ?? 0);
+    const scoreC = Number(scores[id2] ?? 0);
+
+    const payload = {
+        created_by,
+        team_count,
+        team_names,
+        winner,
+        scoreA,
+        scoreB,
+        scoreC
+    };
+
+    console.log("[backup] POST /save-result body", payload);
+
+    let res;
+    try {
+        res = await fetch("/save-result", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+    } catch (error) {
+        console.error("Failed to save final result:", error);
+        return { ok: false, message: "Network error while saving the result." };
+    }
+
+    let data = {};
+    try {
+        data = await res.json();
+    } catch (_) {
+        /* ignore */
+    }
+
+    if (!res.ok) {
+        return { ok: false, message: data.error || data.message || `Save failed (${res.status}).` };
+    }
+
+    resultSaved = true;
+    return { ok: true };
+}
+
+async function closeCurrentSession(reason) {
+    const winnerId = getWinnerFromScores();
+    const winnerName = winnerId ? (teamNames[winnerId] || winnerId) : "TIE";
+
+    if (!gameSessionId) {
+        return;
+    }
+    if (sessionClosed) return;
     sessionClosed = true;
 
     await logGameEvent({
@@ -1165,33 +1233,12 @@ async function closeCurrentSession(reason) {
         awardedTeam: winnerName
     });
 
-    if (!resultSaved) {
-        try {
-            await fetch("/save-result", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    teamA: teams[0]?.name || "Team A",
-                    teamB: teams[1]?.name || "Team B",
-                    teamC: teams[2]?.name || "Team C",
-                    scoreA: scores[teams[0]?.id] || 0,
-                    scoreB: scores[teams[1]?.id] || 0,
-                    scoreC: scores[teams[2]?.id] || 0,
-                    winner: winnerName
-                })
-            });
-            resultSaved = true;
-        } catch (error) {
-            console.error("Failed to save final result:", error);
-        }
-    }
-
     try {
         await fetch(`/api/sessions/${gameSessionId}/complete`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                winner,
+                winner: winnerId,
                 scoreA: scores[teams[0]?.id] || 0,
                 scoreB: scores[teams[1]?.id] || 0,
                 scoreC: scores[teams[2]?.id] || 0
@@ -1219,12 +1266,24 @@ async function endGameEarly() {
       teamNames: Object.fromEntries(finalTeams.map((t) => [t.id, t.name]))
     }));
 
+    const saveOutcome = await saveMatchResultToServer();
+    if (!saveOutcome.ok) {
+        window.alert(saveOutcome.message || "Could not save this game to the server.");
+        return;
+    }
+
     await closeCurrentSession("game_ended_early");
     sessionStorage.removeItem("gameSessionId");
     window.location.href = "results.html";
 }
 
 async function resetGame() {
+    const saveOutcome = await saveMatchResultToServer();
+    if (!saveOutcome.ok) {
+        window.alert(saveOutcome.message || "Could not save this game to the server.");
+        return;
+    }
+
     await closeCurrentSession("game_completed");
 
     sessionStorage.removeItem("gameSessionId");
