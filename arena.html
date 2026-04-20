@@ -22,11 +22,11 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
+z
     body {
-      height: 100svh;
+      min-height: 100vh;
       font-family: "Nunito", sans-serif;
-      overflow: hidden;
+      overflow-x: hidden;
       position: relative;
       color: var(--foam);
     }
@@ -87,7 +87,12 @@
 
     /* ── Ground / Hills ── */
     .ground-wrap {
-      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      pointer-events: none;
     }
 
     /* ── Glowing moon ── */
@@ -110,7 +115,15 @@
 
     /* ── Fireflies ── */
     .firefly {
-      display: none;
+      position: fixed;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #b8ff80;
+      box-shadow: 0 0 6px 3px rgba(184,255,128,0.7);
+      z-index: 5;
+      animation: fireflyFloat linear infinite;
+      pointer-events: none;
     }
     @keyframes fireflyFloat {
       0% { transform: translate(0,0) scale(1); opacity: 0; }
@@ -124,14 +137,11 @@
     .page-wrap {
       position: relative;
       z-index: 10;
-      min-height: 100svh;
-      height: 100svh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 12px 16px 72px;
+      padding: 24px 20px 120px;
     }
 
     /* ── HEADER ── */
@@ -139,7 +149,7 @@
       width: 100%;
       max-width: 1200px;
       text-align: center;
-      padding: 4px 0;
+      padding: 32px 0 20px;
       animation: headerIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
     }
     @keyframes headerIn {
@@ -149,12 +159,12 @@
 
     .eyebrow {
       font-family: "Nunito", sans-serif;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 4px;
+      letter-spacing: 5px;
       text-transform: uppercase;
       color: var(--gold);
-      margin-bottom: 2px;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -163,8 +173,8 @@
 
     .main-title {
       font-family: "Bebas Neue", sans-serif;
-      font-size: clamp(38px, 6vw, 72px);
-      letter-spacing: 4px;
+      font-size: clamp(52px, 10vw, 110px);
+      letter-spacing: 6px;
       line-height: 0.92;
       background: linear-gradient(160deg, #ffffff 0%, #b2ebf2 40%, #5bc8dc 100%);
       -webkit-background-clip: text;
@@ -173,11 +183,11 @@
     }
 
     .tagline {
-      margin-top: 4px;
+      margin-top: 10px;
       font-family: "Nunito", sans-serif;
-      font-size: 10px;
+      font-size: 13px;
       font-weight: 600;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       text-transform: uppercase;
       color: rgba(224,247,255,0.65);
     }
@@ -185,15 +195,15 @@
     /* ── BATTLE CATEGORIES ── */
     .categories-section {
       width: 100%;
-      max-width: 860px;
-      margin: 0;
+      max-width: 900px;
+      margin: 10px 0 26px;
       text-align: center;
       animation: fadeUp 0.6s 0.15s ease both;
       background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 10px 12px;
-      backdrop-filter: blur(6px);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 16px;
+padding: 16px;
+backdrop-filter: blur(6px);
     }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(14px); }
@@ -206,24 +216,24 @@
       letter-spacing: 4px;
       text-transform: uppercase;
       color: rgba(224,247,255,0.55);
-      margin-bottom: 6px;
+      margin-bottom: 12px;
     }
 
     .cat-chips {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 6px;
+      gap: 10px;
     }
 
     .chip {
-      padding: 6px 12px;
+      padding: 8px 18px;
       border-radius: 100px;
       border: 1.5px solid rgba(178,235,242,0.35);
       background: rgba(255,255,255,0.07);
       color: var(--foam);
       font-family: "Nunito", sans-serif;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.5px;
       backdrop-filter: blur(8px);
@@ -240,21 +250,21 @@
 
     /* ── SET TEAM COUNT BUTTON ── */
     .set-count-wrap {
-  margin: 0;
+  margin: 0 0 18px;
 
   /* ADD THIS 👇 */
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
-  padding: 10px 12px;
+  padding: 16px;
   backdrop-filter: blur(6px);
 }
     .set-count-btn {
-      padding: 10px 24px;
+      padding: 14px 38px;
       border: 2px solid rgba(178,235,242,0.45);
       border-radius: 14px;
       font-family: "Bebas Neue", sans-serif;
-      font-size: 18px;
+      font-size: 22px;
       letter-spacing: 3px;
       color: var(--foam);
       background: rgba(255,255,255,0.1);
@@ -263,7 +273,7 @@
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .set-count-btn:hover {
       background: rgba(255,255,255,0.18);
@@ -278,21 +288,21 @@
   display: none;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 0;
+  gap: 14px;
+  margin-bottom: 22px;
 
   /* ADD THIS 👇 */
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 16px;
-  padding: 10px 12px;
+  padding: 18px;
   backdrop-filter: blur(6px);
 }
     .count-picker.visible { display: flex; }
 
     .count-label {
       font-family: "Cinzel", serif;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 600;
       letter-spacing: 3px;
       text-transform: uppercase;
@@ -301,20 +311,20 @@
 
     .count-options {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
     .count-opt {
-      width: 46px;
-      height: 46px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       border: 2.5px solid rgba(178,235,242,0.4);
       background: rgba(255,255,255,0.08);
       color: var(--foam);
       font-family: "Bebas Neue", sans-serif;
-      font-size: 20px;
+      font-size: 26px;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -332,18 +342,18 @@
 
     /* ── ENTER ARENA BUTTON ── */
     .enter-wrap {
-      margin: 0;
+      margin: 0 0 28px;
       animation: fadeUp 0.6s 0.25s ease both;
     }
 
     .enter-btn {
       position: relative;
-      padding: 12px 28px;
+      padding: 18px 52px;
       border: none;
       border-radius: 16px;
       font-family: "Bebas Neue", sans-serif;
-      font-size: 20px;
-      letter-spacing: 3px;
+      font-size: 28px;
+      letter-spacing: 4px;
       color: var(--ink);
       cursor: pointer;
       background: linear-gradient(135deg, #ffe08a 0%, var(--gold-bright) 38%, var(--gold) 100%);
@@ -355,7 +365,7 @@
       animation: pulseCTA 3s ease-in-out infinite;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .enter-btn::before {
       content: "▶";
@@ -378,11 +388,11 @@
     /* ── TEAM SETUP SECTION ── */
     .teams-section {
       width: 100%;
-      max-width: 980px;
+      max-width: 1100px;
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 24px;
       animation: revealTeams 0.65s cubic-bezier(0.34,1.2,0.64,1) both;
     }
     .teams-section.visible { display: flex; }
@@ -393,7 +403,7 @@
 
     .teams-heading {
       font-family: "Cinzel Decorative", serif;
-      font-size: clamp(14px, 2.2vw, 18px);
+      font-size: clamp(16px, 3vw, 22px);
       color: var(--gold-bright);
       letter-spacing: 2px;
       text-align: center;
@@ -402,15 +412,15 @@
 
     .teams-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
       width: 100%;
     }
 
     /* ── Wooden frame team setup card ── */
     .team-setup-card {
       position: relative;
-      padding: 8px;
+      padding: 10px;
       border-radius: 20px;
       background:
         repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
@@ -446,13 +456,13 @@
       background:
         radial-gradient(ellipse at 30% 20%, #fff8e8, transparent 50%),
         linear-gradient(170deg, #fdf3dc 0%, #f5dfa0 60%, #e8c870 100%);
-      padding: 12px 10px 10px;
+      padding: 20px 18px 18px;
       box-shadow: inset 0 0 28px rgba(139,90,20,0.15), inset 0 2px 0 rgba(255,255,255,0.55);
       border: 1px solid rgba(180,120,20,0.3);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 14px;
       text-align: center;
     }
 
@@ -481,17 +491,17 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 4px;
-      max-width: 168px;
+      gap: 6px;
+      max-width: 220px;
     }
 
     .avatar-opt {
-      width: 28px;
-      height: 28px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       border: 2px solid rgba(139,90,20,0.25);
       background: rgba(255,255,255,0.4);
-      font-size: 16px;
+      font-size: 22px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -507,11 +517,11 @@
     }
 
     .selected-avatar-display {
-      font-size: 32px;
+      font-size: 46px;
       line-height: 1;
       filter: drop-shadow(0 3px 8px rgba(0,0,0,0.3));
       animation: flagWave 2.5s ease-in-out infinite;
-      min-height: 34px;
+      min-height: 52px;
     }
     @keyframes flagWave {
       0%, 100% { transform: rotate(-4deg); }
@@ -525,9 +535,9 @@
       border-radius: 10px;
       background: rgba(255,255,255,0.55);
       color: var(--ink);
-      padding: 7px 10px;
+      padding: 10px 14px;
       font-family: "Cinzel Decorative", serif;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 700;
       outline: none;
       text-align: center;
@@ -549,13 +559,73 @@
       min-height: 14px;
     }
 
-    /* ── ADMIN DASHBOARD BUTTON (fixed corner) ── */
-    .admin-corner-btn {
+    .user-tag {
       position: fixed;
-      bottom: 12px;
-      right: 12px;
+      top: 20px;
+      left: 20px;
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow:
+        0 0 0 2px var(--gold-dark),
+        0 0 0 4px #5a3800,
+        0 12px 30px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .user-tag-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+      color: var(--ink);
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(244,163,0,0.28);
+    }
+    .user-tag-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .user-tag-label {
+      font-family: "Cinzel", serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 209, 102, 0.8);
+    }
+    .user-tag-name {
+      font-family: "Cinzel Decorative", serif;
+      font-size: 13px;
+      color: var(--parchment);
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── ADMIN DASHBOARD BUTTON (fixed corner) ── */
+    .corner-actions {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
       z-index: 100;
-      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-corner-btn {
+      padding: 10px 20px;
       border-radius: 50px;
       
       background: rgba(255, 200, 50, 0.2);
@@ -563,14 +633,14 @@ border: 1px solid rgba(255, 200, 50, 0.5);
 color: #ffd54f;
       backdrop-filter: blur(12px);
       font-family: "Nunito", sans-serif;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 700;
       letter-spacing: 1px;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.35);
     }
     .admin-corner-btn:hover {
@@ -580,17 +650,27 @@ color: #ffd54f;
       transform: translateY(-2px);
       box-shadow: 0 8px 28px rgba(244,163,0,0.2);
     }
-    .admin-corner-btn .shield { font-size: 13px; }
+    .admin-corner-btn .shield { font-size: 15px; }
 
     @media (max-width: 640px) {
-      .main-title { font-size: 40px; letter-spacing: 3px; }
-      .page-wrap { padding: 10px 12px 56px; }
-      .chip { padding: 5px 10px; font-size: 10px; }
-      .admin-corner-btn { bottom: 10px; right: 10px; font-size: 10px; padding: 7px 12px; }
+      .main-title { font-size: 52px; letter-spacing: 3px; }
+      .user-tag { top: 14px; left: 14px; padding: 8px 12px; }
+      .user-tag-badge { width: 30px; height: 30px; font-size: 14px; }
+      .user-tag-name { max-width: 150px; font-size: 11px; }
+      .corner-actions { bottom: 16px; right: 16px; gap: 8px; }
+      .admin-corner-btn { font-size: 12px; padding: 9px 16px; }
     }
   </style>
 </head>
 <body>
+
+  <div class="user-tag" aria-label="Logged in user">
+    <div class="user-tag-badge">👤</div>
+    <div class="user-tag-copy">
+      <span class="user-tag-label">Logged In</span>
+      <span class="user-tag-name" id="loggedInUserTag">Guest</span>
+    </div>
+  </div>
 
   <!-- Background layers -->
   <div class="sky"></div>
@@ -686,11 +766,28 @@ color: #ffd54f;
   </div><!-- /page-wrap -->
 
   <!-- ── ADMIN DASHBOARD CORNER BUTTON ── -->
+  <div class="corner-actions">
+  <button class="admin-corner-btn" onclick="window.location.href='index.html'">
+    <span class="shield">&larr;</span> Back
+  </button>
+
   <button class="admin-corner-btn" onclick="window.location.href='dashboard.html'">
     <span class="shield">🛡️</span> User Dashboard
   </button>
+  </div>
 
   <script>
+    const loggedInUser = localStorage.getItem("loggedInUser")
+      || localStorage.getItem("userUsername")
+      || "Guest";
+    if (!localStorage.getItem("loggedInUser") && loggedInUser !== "Guest") {
+      localStorage.setItem("loggedInUser", loggedInUser);
+    }
+    sessionStorage.removeItem("dashboardViewingUser");
+    const loggedInUserTag = document.getElementById("loggedInUserTag");
+    if (loggedInUserTag) {
+      loggedInUserTag.textContent = loggedInUser;
+    }
     /* ── Stars ── */
     const starsEl = document.getElementById("stars");
     for (let i = 0; i < 100; i++) {
@@ -755,6 +852,7 @@ color: #ffd54f;
       document.getElementById("enterWrap").style.display = "flex";
       document.getElementById("enterWrap").style.justifyContent = "center";
 
+      setTimeout(() => section.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     }
 
     function renderTeamSetupCards(count) {

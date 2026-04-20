@@ -640,7 +640,8 @@ signInForm.addEventListener("submit", async (e) => {
   try {
     const data = await postJson("/login", { username, password });
     if (!data.success) throw new Error(data.message || "Login failed.");
-    localStorage.setItem("userUsername", username.toLowerCase());
+    localStorage.setItem("loggedInUser", username);
+    localStorage.removeItem("userUsername");
     signInMsg.textContent = data.message || "Login successful.";
     signInMsg.className = "msg ok";
     setTimeout(() => { window.location.href = "arena.html"; }, 600);
@@ -696,7 +697,15 @@ async function postJson(url, payload) {
   let data;
   try { data = raw ? JSON.parse(raw) : {}; }
   catch (_) { throw new Error("Server returned an invalid response. Please restart backend server."); }
-  if (!response.ok) throw new Error(data.message || "Request failed.");
+  if (!response.ok) {
+    const msg = typeof data.message === "string" && data.message.trim()
+      ? data.message.trim()
+      : "Request failed.";
+    const err = new Error(msg);
+    err.status = response.status;
+    err.payload = data;
+    throw err;
+  }
   return data;
 }
 </script>

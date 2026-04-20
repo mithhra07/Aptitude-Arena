@@ -666,7 +666,7 @@
 
     /* ── State ── */
     let selectedUsername = "";
-    let loggedInUsername = "";
+    let dashboardViewingUsername = sessionStorage.getItem("dashboardViewingUser") || "";
     let matchCounts = {};   // { username: count }
 
     /* ── DOM refs ── */
@@ -691,7 +691,10 @@
       modalMsg.className = `modal-msg ${type}`.trim();
     }
 
-    function goHome() { window.location.href = "arena.html"; }
+    function goHome() {
+      sessionStorage.removeItem("dashboardViewingUser");
+      window.location.href = "arena.html";
+    }
 
     function formatIST(value) {
       if (!value) return "—";
@@ -785,8 +788,8 @@
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.message || "Invalid password.");
 
-        loggedInUsername = selectedUsername;
-        localStorage.setItem("userUsername", loggedInUsername);
+        dashboardViewingUsername = selectedUsername;
+        sessionStorage.setItem("dashboardViewingUser", dashboardViewingUsername);
         closeModal();
         setGlobalMsg("");
         await loadDashboard();
@@ -798,17 +801,17 @@
 
     /* ── Results dashboard ── */
     async function loadDashboard() {
-      if (!loggedInUsername) return;
+      if (!dashboardViewingUsername) return;
 
-      const pal = getPalette(loggedInUsername);
-      const initials = getInitials(loggedInUsername);
+      const pal = getPalette(dashboardViewingUsername);
+      const initials = getInitials(dashboardViewingUsername);
 
       const av = document.getElementById("resultsAvatar");
       av.style.background = pal.bg;
       av.style.color = pal.color;
       av.textContent = initials;
 
-      document.getElementById("welcomeLabel").textContent = `Welcome, ${loggedInUsername}`;
+      document.getElementById("welcomeLabel").textContent = `Welcome, ${dashboardViewingUsername}`;
       document.getElementById("matchCountLabel").textContent = "Loading battle records...";
 
       userSelectionSection.classList.add("hidden");
@@ -817,14 +820,14 @@
       resultsEmpty.classList.add("hidden");
 
       try {
-        const res = await fetch(`/admin/results?username=${encodeURIComponent(loggedInUsername)}`);
+        const res = await fetch(`/admin/results?username=${encodeURIComponent(dashboardViewingUsername)}`);
         if (!res.ok) throw new Error("Could not fetch battle history.");
         const results = await res.json();
         renderResults(results);
         const count = Array.isArray(results) ? results.length : 0;
         document.getElementById("matchCountLabel").textContent =
           count === 0 ? "No battles yet" : `${count} battle${count !== 1 ? "s" : ""} recorded`;
-        matchCounts[loggedInUsername] = count;
+        matchCounts[dashboardViewingUsername] = count;
       } catch (err) {
         resultsEmpty.classList.remove("hidden");
         resultsEmpty.textContent = err.message || "Failed to load battles.";
@@ -852,7 +855,8 @@
     }
 
     function switchUser() {
-      loggedInUsername = "";
+      dashboardViewingUsername = "";
+      sessionStorage.removeItem("dashboardViewingUser");
       dashboardSection.classList.add("hidden");
       userSelectionSection.classList.remove("hidden");
       resultsTbody.innerHTML = "";
@@ -868,9 +872,13 @@
 
     /* ── Init ── */
     (async function init() {
-      loggedInUsername = "";
+      dashboardViewingUsername = sessionStorage.getItem("dashboardViewingUser") || "";
       dashboardSection.classList.add("hidden");
       userSelectionSection.classList.remove("hidden");
+      if (dashboardViewingUsername) {
+        await loadDashboard();
+        return;
+      }
       await loadUsers();
     })();
   </script>

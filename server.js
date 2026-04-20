@@ -225,19 +225,32 @@ app.post("/login", (req, res) => {
   }
 
   const normalizedUsername = String(username).trim().toLowerCase();
-  const sql = `SELECT id, username FROM users WHERE username = ? AND password = ?`;
+  const sql = `SELECT * FROM users WHERE username = ?`;
 
-  db.get(sql, [normalizedUsername, String(password)], (err, row) => {
+  db.get(sql, [normalizedUsername], (err, row) => {
     if (err) {
       console.error("Login failed:", err.message);
       return res.status(500).json({ success: false, message: "Could not login right now." });
     }
 
     if (!row) {
-      return res.status(401).json({ success: false, message: "Invalid username or password." });
+      return res.status(404).json({
+        success: false,
+        message: "User hasn't registered"
+      });
     }
 
-    return res.json({ success: true, message: "Login successful." });
+    if (row.password !== String(password)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid username or password"
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Login successful"
+    });
   });
 });
 

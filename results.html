@@ -123,6 +123,61 @@
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 3; pointer-events: none;
     }
 
+    .user-tag {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(0,0,0,0.04) 2px, transparent 2px, transparent 18px),
+        linear-gradient(160deg, #7a3d12 0%, #4a2008 40%, #6b3a1f 70%, #3b1f0a 100%);
+      box-shadow:
+        0 0 0 2px var(--gold-dark),
+        0 0 0 4px #5a3800,
+        0 12px 30px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .user-tag-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+      color: var(--ink);
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(244,163,0,0.28);
+    }
+    .user-tag-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .user-tag-label {
+      font-family: "Cinzel", serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 209, 102, 0.8);
+    }
+    .user-tag-name {
+      font-family: "Cinzel Decorative", serif;
+      font-size: 13px;
+      color: #fdf3dc;
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* ── Page layout ── */
     .page {
       position: relative; z-index: 10;
@@ -548,10 +603,21 @@
       .score-num { font-size: 22px; }
       .score-pill { padding: 4px 8px; }
       .results-title { letter-spacing: 2px; }
+      .user-tag { top: 14px; left: 14px; padding: 8px 12px; }
+      .user-tag-badge { width: 30px; height: 30px; font-size: 14px; }
+      .user-tag-name { max-width: 150px; font-size: 11px; }
     }
   </style>
 </head>
 <body>
+
+  <div class="user-tag" aria-label="Logged in user">
+    <div class="user-tag-badge">👤</div>
+    <div class="user-tag-copy">
+      <span class="user-tag-label">Logged In</span>
+      <span class="user-tag-name" id="loggedInUserTag">Guest</span>
+    </div>
+  </div>
 
   <!-- ── Background ── -->
   <div class="sky"></div>
@@ -654,6 +720,11 @@
   </div>
 
   <script>
+    const loggedInUser = localStorage.getItem("userUsername") || "Guest";
+    const loggedInUserTag = document.getElementById("loggedInUserTag");
+    if (loggedInUserTag) {
+      loggedInUserTag.textContent = loggedInUser;
+    }
     /* ── Stars ── */
     const starsEl = document.getElementById("stars");
     for (let i = 0; i < 100; i++) {
